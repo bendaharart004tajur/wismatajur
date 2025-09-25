@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileWarning } from 'lucide-react';
 import type { Iuran, Pengeluaran, Warga, AnggotaKeluarga } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
+import { id } from 'date-fns/locale';
 
 
 type LaporanType = 'iuran' | 'pengeluaran' | 'warga' | 'keluarga';
@@ -184,6 +185,41 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
 
     }, [filteredData, type]);
 
+    const { groupedPengeluaran, grandTotalPengeluaran } = useMemo(() => {
+        if (type !== 'pengeluaran' || !filteredData) {
+            return { groupedPengeluaran: {}, grandTotalPengeluaran: 0 };
+        }
+
+        const grouped: { [key: string]: { items: Pengeluaran[], subtotal: number } } = {};
+        let grandTotal = 0;
+
+        for (const item of filteredData as Pengeluaran[]) {
+            const monthKey = new Date(item.tanggal).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+            if (!grouped[monthKey]) {
+                grouped[monthKey] = { items: [], subtotal: 0 };
+            }
+            grouped[monthKey].items.push(item);
+            grouped[monthKey].subtotal += item.jumlah || 0;
+            grandTotal += item.jumlah || 0;
+        }
+
+        const sortedMonthKeys = Object.keys(grouped).sort((a, b) => {
+            const dateA = new Date(a);
+            const dateB = new Date(b);
+             // Handle invalid dates if any
+            if(isNaN(dateA.getTime())) return 1;
+            if(isNaN(dateB.getTime())) return -1;
+            return dateA.getTime() - dateB.getTime();
+        });
+
+        const sortedGrouped: typeof grouped = {};
+        for (const key of sortedMonthKeys) {
+            sortedGrouped[key] = grouped[key];
+        }
+
+        return { groupedPengeluaran: sortedGrouped, grandTotalPengeluaran: grandTotal };
+    }, [filteredData, type]);
+
     const renderHeaders = () => {
         switch (type) {
             case 'iuran': return (
@@ -251,9 +287,28 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                         </TableRow>
                     </React.Fragment>
                 ));
-            case 'pengeluaran': return (filteredData as Pengeluaran[]).map(item => (
-                <TableRow key={item.id}><TableCell>{formatDate(item.tanggal)}</TableCell><TableCell>{item.kategori}</TableCell><TableCell>{item.deskripsi}</TableCell><TableCell className="text-right">{formatRupiah(item.jumlah)}</TableCell><TableCell>{item.dicatatOleh}</TableCell></TableRow>
-            ));
+            case 'pengeluaran': 
+                return Object.entries(groupedPengeluaran).map(([month, group]) => (
+                     <React.Fragment key={month}>
+                        <TableRow className="bg-muted/50 hover:bg-muted/50">
+                            <TableCell colSpan={5} className="font-bold">{month}</TableCell>
+                        </TableRow>
+                        {group.items.map(item => (
+                            <TableRow key={item.id}>
+                                <TableCell>{formatDate(item.tanggal)}</TableCell>
+                                <TableCell>{item.kategori}</TableCell>
+                                <TableCell>{item.deskripsi}</TableCell>
+                                <TableCell className="text-right">{formatRupiah(item.jumlah)}</TableCell>
+                                <TableCell>{item.dicatatOleh}</TableCell>
+                            </TableRow>
+                        ))}
+                         <TableRow className="bg-muted/50 hover:bg-muted/50 font-bold">
+                            <TableCell colSpan={3} className="text-right">Subtotal {month}</TableCell>
+                            <TableCell className="text-right">{formatRupiah(group.subtotal)}</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                     </React.Fragment>
+                ));
             case 'warga': return (filteredData as Warga[]).map(item => (
                 <TableRow key={item.wargaId}><TableCell>{item.nama}</TableCell><TableCell>{item.blok}/{item.norumah}</TableCell><TableCell>{item.statustempattinggal}</TableCell><TableCell>{item.statusktp}</TableCell><TableCell>{item.phone}</TableCell></TableRow>
             ));
@@ -290,7 +345,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             <Table>
                 <TableHeader>{renderHeaders()}</TableHeader>
                 <TableBody>{renderRows()}</TableBody>
-                 {type === 'iuran' && (
+                 {type === 'iuran' && grandTotalIuran.total > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
                             <TableCell colSpan={3} className="text-right">GRAND TOTAL</TableCell>
@@ -298,6 +353,15 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                             <TableCell className="text-right">{formatRupiah(grandTotalIuran.sosial)}</TableCell>
                              <TableCell className="text-right">{formatRupiah(grandTotalIuran.masjid)}</TableCell>
                             <TableCell className="text-right">{formatRupiah(grandTotalIuran.total)}</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    </TableFooter>
+                )}
+                 {type === 'pengeluaran' && grandTotalPengeluaran > 0 && (
+                     <TableFooter>
+                        <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
+                            <TableCell colSpan={3} className="text-right">GRAND TOTAL</TableCell>
+                            <TableCell className="text-right">{formatRupiah(grandTotalPengeluaran)}</TableCell>
                             <TableCell></TableCell>
                         </TableRow>
                     </TableFooter>
