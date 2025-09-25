@@ -14,11 +14,6 @@ import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/p
 
 
 export async function getAnggotaKeluargaAction(peran: Peran): Promise<AnggotaKeluargaWithInfo[]> {
-  // Since only Admin and Pengawas can access this, we remove role-based filtering.
-  if (peran !== 'Admin' && peran !== 'Pengawas') {
-      return []; // Return empty array if accessed by other roles, as a safeguard.
-  }
-
   try {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
       const allWarga = await getWargaDataFromSheet('Admin');
