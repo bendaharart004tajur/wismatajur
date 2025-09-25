@@ -64,42 +64,25 @@ export default function DashboardPage() {
 
             setLoading(true);
             try {
-                // Fetch all data required for all roles first
-                const [allWargaForAdmin, allIuran, pengumuman, allAnggota, allPengeluaranForAdmin] = await Promise.all([
-                    getWargaAction('Admin', ''), // Fetch all warga for demographic and other stats
-                    getIuranAction(user.peran, user.wargaId, user.blok),
+                // Fetch all data required for all roles
+                const [
+                    allWarga, 
+                    allIuran, 
+                    allPengumuman, 
+                    allAnggota, 
+                    allPengeluaran,
+                    allPendapatan
+                ] = await Promise.all([
+                    getWargaAction('Admin', ''), // Always fetch all warga
+                    getIuranAction('Admin', ''), // Always fetch all iuran
                     getPengumumanAction(),
-                    getAnggotaKeluargaAction('Admin', ''), // Fetch all members for demographics
-                    getPengeluaranAction('Admin'), // Fetch all expenses for all roles
+                    getAnggotaKeluargaAction('Admin', ''), // Always fetch all members
+                    getPengeluaranAction('Admin'), // Always fetch all expenses
+                    getPendapatanAction('Admin'), // Always fetch all other income
                 ]);
                 
-                let wargaData: Warga[];
-                // Filter warga data based on role for specific cards if needed
-                if (user.peran === 'Admin') {
-                    wargaData = allWargaForAdmin;
-                } else if (user.peran === 'Koordinator') {
-                    wargaData = allWargaForAdmin.filter(w => w.blok === user.blok);
-                } else {
-                    wargaData = allWargaForAdmin.filter(w => w.wargaId === user.wargaId);
-                }
-
-
-                // Admin-specific financial data
-                let allPendapatan: Pendapatan[] = [];
-                if (user.peran === 'Admin') {
-                   try {
-                     const [pendapatan] = await Promise.all([
-                        getPendapatanAction(user.peran),
-                     ]);
-                     allPendapatan = pendapatan;
-
-                   } catch (e) {
-                    console.error("Gagal mengambil data pendapatan:", e);
-                   }
-                }
-                
-                const totalUnit = wargaData.length;
-                const wargaAktif = wargaData.filter(w => w.nama && w.nama.trim().toLowerCase() !== 'kosong');
+                const totalUnit = allWarga.length;
+                const wargaAktif = allWarga.filter(w => w.nama && w.nama.trim().toLowerCase() !== 'kosong');
                 const byStatusTinggal = wargaAktif.reduce((acc, w) => {
                     const status = w.statustempattinggal || 'Tidak Diketahui';
                     acc[status] = (acc[status] || 0) + 1;
@@ -115,11 +98,10 @@ export default function DashboardPage() {
 
 
                 // Demographics Stats for ALL roles
-                const allWargaAktifForDemographics = allWargaForAdmin.filter(w => w.nama && w.nama.trim() !== '' && w.nama.toLowerCase() !== 'kosong');
                 const allPenduduk = [
-                    ...allWargaAktifForDemographics.map(w => ({ nama: w.nama, jeniskelamin: w.jeniskelamin, blok: w.blok })),
+                    ...wargaAktif.map(w => ({ nama: w.nama, jeniskelamin: w.jeniskelamin, blok: w.blok })),
                     ...allAnggota.map(a => {
-                        const wargaKepala = allWargaForAdmin.find(w => w.wargaId === a.wargaId);
+                        const wargaKepala = allWarga.find(w => w.wargaId === a.wargaId);
                         return {
                             nama: a.nama,
                             jeniskelamin: a.jeniskelamin,
@@ -151,42 +133,15 @@ export default function DashboardPage() {
                 const currentMonthName = now.toLocaleString('id-ID', { month: 'long' });
                 const currentYear = now.getFullYear();
 
-                const iuranBulanIni = allIuran.filter(i => 
-                    new Date(i.tanggalBayar).getMonth() === now.getMonth() &&
-                    new Date(i.tanggalBayar).getFullYear() === now.getFullYear() &&
-                    i.status === 'Lunas'
-                );
-
-                const totalNominalIuran = iuranBulanIni.reduce((sum, current) => sum + current.totalIuran, 0);
-                const totalLingkungan = iuranBulanIni.reduce((sum, current) => sum + current.iuranLingkungan, 0);
-                const totalSosial = iuranBulanIni.reduce((sum, current) => sum + current.iuranSosial, 0);
-                const totalMasjid = iuranBulanIni.reduce((sum, current) => sum + current.iuranMasjid, 0);
-                
-                let iuranLunasCount = 0;
-                let iuranPercentage = 0;
-
                 const iuranPeriodeIni = allIuran.filter(i => i.bulan === currentMonthName && i.tahun === currentYear);
                 const iuranLunasPeriodeIni = iuranPeriodeIni.filter(i => i.status === 'Lunas');
 
-                if (user.peran === 'Admin') {
-                     iuranLunasCount = iuranLunasPeriodeIni.length;
-                     const totalWargaTarget = allWargaAktifForDemographics.length;
-                     iuranPercentage = totalWargaTarget > 0 ? Math.round((iuranLunasCount / totalWargaTarget) * 100) : 0;
-                } else if (user.peran === 'Koordinator') {
-                     const wargaDiBlok = allWargaAktifForDemographics.filter(w => w.blok === user.blok).length;
-                     iuranLunasCount = iuranLunasPeriodeIni.filter(i => {
-                        const warga = allWargaForAdmin.find(w => w.wargaId === i.wargaId);
-                        return warga?.blok === user.blok;
-                     }).length;
-                     iuranPercentage = wargaDiBlok > 0 ? Math.round((iuranLunasCount / wargaDiBlok) * 100) : 0;
-                }
-                else { // User
-                    iuranLunasCount = iuranLunasPeriodeIni.length > 0 ? 1 : 0;
-                    iuranPercentage = iuranLunasCount > 0 ? 100 : 0;
-                }
-
+                const totalWargaTarget = wargaAktif.length;
+                const iuranLunasCount = iuranLunasPeriodeIni.length;
+                const iuranPercentage = totalWargaTarget > 0 ? Math.round((iuranLunasCount / totalWargaTarget) * 100) : 0;
+                
                 setIuranStats({
-                    iuranLunasCount: iuranLunasPeriodeIni.length,
+                    iuranLunasCount: iuranLunasCount,
                     iuranPercentage: iuranPercentage,
                     totalNominalIuran: iuranLunasPeriodeIni.reduce((sum, i) => sum + i.totalIuran, 0),
                     totalLingkungan: iuranLunasPeriodeIni.reduce((sum, i) => sum + i.iuranLingkungan, 0),
@@ -195,7 +150,7 @@ export default function DashboardPage() {
                 });
                 
                 // Pengeluaran bulan ini (for all roles)
-                const pengeluaranBulanIni = allPengeluaranForAdmin.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear());
+                const pengeluaranBulanIni = allPengeluaran.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear());
                 const totalPengeluaranBulanIni = pengeluaranBulanIni.reduce((acc, p) => acc + p.jumlah, 0);
                 const byKategori = pengeluaranBulanIni.reduce((acc, p) => {
                     acc[p.kategori] = (acc[p.kategori] || 0) + p.jumlah;
@@ -207,88 +162,86 @@ export default function DashboardPage() {
                     byKategori,
                 });
 
-                // Calculate total saldo (Admin only)
-                if (user.peran === 'Admin') {
-                    const totalPemasukanIuran = allIuran
-                        .filter(i => i.status === 'Lunas')
-                        .reduce((sum, i) => sum + i.totalIuran, 0);
-                    
-                    const totalPemasukanPendapatan = allPendapatan
-                        .reduce((sum, p) => sum + p.nominal, 0);
+                // Calculate total saldo 
+                const totalPemasukanIuran = allIuran
+                    .filter(i => i.status === 'Lunas')
+                    .reduce((sum, i) => sum + i.totalIuran, 0);
+                
+                const totalPemasukanPendapatan = allPendapatan
+                    .reduce((sum, p) => sum + p.nominal, 0);
 
-                    const totalPemasukan = totalPemasukanIuran + totalPemasukanPendapatan;
-                    
-                    const totalPengeluaranKas = allPengeluaranForAdmin
-                        .reduce((sum, p) => sum + p.jumlah, 0);
-                    
-                    const totalSaldo = totalPemasukan - totalPengeluaranKas;
+                const totalPemasukan = totalPemasukanIuran + totalPemasukanPendapatan;
+                
+                const totalPengeluaranKas = allPengeluaran
+                    .reduce((sum, p) => sum + p.jumlah, 0);
+                
+                const totalSaldo = totalPemasukan - totalPengeluaranKas;
 
-                    setSaldoStats({
-                        totalSaldo,
-                        totalPemasukan,
-                        totalPengeluaranKas
-                    });
+                setSaldoStats({
+                    totalSaldo,
+                    totalPemasukan,
+                    totalPengeluaranKas
+                });
 
-                    // Prepare data for monthly finance chart
-                    const summary: { [key: string]: { pemasukan: number; pengeluaran: number } } = {};
-                    const N_MONTHS = 6;
-                    
-                    for (let i = 0; i < N_MONTHS; i++) {
-                        const d = new Date();
-                        d.setMonth(d.getMonth() - i);
-                        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        summary[monthKey] = { pemasukan: 0, pengeluaran: 0 };
-                    }
-
-                    allIuran.forEach(iuran => {
-                        if (iuran.status === 'Lunas') {
-                            const d = new Date(iuran.tanggalBayar);
-                            const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                            if (summary[monthKey]) {
-                                summary[monthKey].pemasukan += iuran.totalIuran;
-                            }
-                        }
-                    });
-
-                    allPendapatan.forEach(p => {
-                        const d = new Date(p.tanggal);
-                        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        if (summary[monthKey]) {
-                            summary[monthKey].pemasukan += p.nominal;
-                        }
-                    });
-
-                    allPengeluaranForAdmin.forEach(p => {
-                        const d = new Date(p.tanggal);
-                        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        if (summary[monthKey]) {
-                            summary[monthKey].pengeluaran += p.jumlah;
-                        }
-                    });
-                    
-                    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                    if (summary[currentMonthKey]) {
-                       const iuranBulanIni = allIuran.filter(i => i.bulan === currentMonthName && i.tahun === currentYear && i.status === 'Lunas').reduce((acc, i) => acc + i.totalIuran, 0);
-                       const pendapatanLainBulanIni = allPendapatan.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear()).reduce((acc, p) => acc + p.nominal, 0);
-                       summary[currentMonthKey].pemasukan = iuranBulanIni + pendapatanLainBulanIni;
-                    }
-                    
-                    const chartData = Object.entries(summary).map(([key, value]) => {
-                         const [year, monthNum] = key.split('-');
-                         const monthName = new Date(Number(year), Number(monthNum) - 1).toLocaleString('id-ID', { month: 'long' });
-                         return {
-                            month: `${monthName} ${year}`,
-                            pemasukan: value.pemasukan,
-                            pengeluaran: value.pengeluaran,
-                        }
-                    }).reverse();
-
-                    setMonthlyChartData(chartData as MonthlySummary[]);
+                // Prepare data for monthly finance chart
+                const summary: { [key: string]: { pemasukan: number; pengeluaran: number } } = {};
+                const N_MONTHS = 6;
+                
+                for (let i = 0; i < N_MONTHS; i++) {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() - i);
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    summary[monthKey] = { pemasukan: 0, pengeluaran: 0 };
                 }
+
+                allIuran.forEach(iuran => {
+                    if (iuran.status === 'Lunas') {
+                        const d = new Date(iuran.tanggalBayar);
+                        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        if (summary[monthKey]) {
+                            summary[monthKey].pemasukan += iuran.totalIuran;
+                        }
+                    }
+                });
+
+                allPendapatan.forEach(p => {
+                    const d = new Date(p.tanggal);
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    if (summary[monthKey]) {
+                        summary[monthKey].pemasukan += p.nominal;
+                    }
+                });
+
+                allPengeluaran.forEach(p => {
+                    const d = new Date(p.tanggal);
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    if (summary[monthKey]) {
+                        summary[monthKey].pengeluaran += p.jumlah;
+                    }
+                });
+                
+                const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                if (summary[currentMonthKey]) {
+                    const iuranBulanIniTotal = allIuran.filter(i => i.bulan === currentMonthName && i.tahun === currentYear && i.status === 'Lunas').reduce((acc, i) => acc + i.totalIuran, 0);
+                    const pendapatanLainBulanIni = allPendapatan.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear()).reduce((acc, p) => acc + p.nominal, 0);
+                    summary[currentMonthKey].pemasukan = iuranBulanIniTotal + pendapatanLainBulanIni;
+                }
+                
+                const chartData = Object.entries(summary).map(([key, value]) => {
+                        const [year, monthNum] = key.split('-');
+                        const monthName = new Date(Number(year), Number(monthNum) - 1).toLocaleString('id-ID', { month: 'long' });
+                        return {
+                        month: `${monthName} ${year}`,
+                        pemasukan: value.pemasukan,
+                        pengeluaran: value.pengeluaran,
+                    }
+                }).reverse();
+
+                setMonthlyChartData(chartData as MonthlySummary[]);
 
 
                 setStats({
-                    pengumumanCount: pengumuman.length,
+                    pengumumanCount: allPengumuman.length,
                 });
 
             } catch (error) {
@@ -311,30 +264,14 @@ export default function DashboardPage() {
             </div>
             
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                 {user?.peran === 'Admin' ? (
-                    <>
-                        <SaldoCard stats={saldoStats} loading={loading} />
-                        <WargaStatsCard stats={wargaStats} loading={loading} />
-                        <MonthlyIuranCard stats={iuranStats} loading={loading} />
-                        <MonthlyPengeluaranCard stats={pengeluaranStats} loading={loading} />
-                    </>
-                ) : (
-                    <>
-                        <StatsCard 
-                            title="Pengumuman"
-                            value={loading ? <Skeleton className="h-8 w-1/2" /> : stats.pengumumanCount.toString()}
-                            description={loading ? <Skeleton className="h-4 w-full" /> : "Total pengumuman yang dipublikasikan"}
-                            icon={Megaphone}
-                        />
-                        <WargaStatsCard stats={wargaStats} loading={loading} />
-                        <MonthlyIuranCard stats={iuranStats} loading={loading} />
-                        <MonthlyPengeluaranCard stats={pengeluaranStats} loading={loading} />
-                    </>
-                )}
+                <SaldoCard stats={saldoStats} loading={loading} />
+                <WargaStatsCard stats={wargaStats} loading={loading} />
+                <MonthlyIuranCard stats={iuranStats} loading={loading} />
+                <MonthlyPengeluaranCard stats={pengeluaranStats} loading={loading} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {user?.peran === 'Admin' && <MonthlyFinanceChart data={monthlyChartData} />}
+                <MonthlyFinanceChart data={monthlyChartData} />
                 <DemographicsCard stats={demographicsStats} loading={loading} />
             </div>
         </div>
