@@ -3,10 +3,6 @@
 import * as React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { getIuranAction } from '@/app/actions/iuran-actions';
-import { getPengeluaranAction } from '@/app/actions/pengeluaran-actions';
-import { getWargaAction } from '@/app/actions/warga-actions';
-import { getAnggotaKeluargaAction } from '@/app/actions/anggota-keluarga-actions';
 import {
   Table,
   TableBody,
@@ -16,13 +12,10 @@ import {
   TableRow,
   TableFooter,
 } from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { FileWarning } from 'lucide-react';
 import type { Iuran, Pengeluaran, Warga, AnggotaKeluarga } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
-import { id } from 'date-fns/locale';
-
 
 type LaporanType = 'iuran' | 'pengeluaran' | 'warga' | 'keluarga';
 type LaporanData = Iuran[] | Pengeluaran[] | Warga[] | AnggotaKeluargaWithInfo[];
@@ -31,6 +24,7 @@ interface LaporanTableProps {
     type: LaporanType;
     bulan: string;
     tahun: string;
+    data: LaporanData;
 }
 
 const formatRupiah = (amount: number | null | undefined) => {
@@ -51,51 +45,9 @@ const formatDate = (dateString: string) => {
     }
 };
 
-export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) {
+export default function LaporanTable({ type, bulan, tahun, data }: LaporanTableProps) {
     const { user } = useAuth();
-    const [data, setData] = useState<LaporanData>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const fetchData = useCallback(async () => {
-        if (!user) {
-            setError('Anda harus login untuk melihat laporan.');
-            setIsLoading(false);
-            return;
-        }
-
-        setIsLoading(true);
-        setError(null);
-        try {
-            let fetchedData: LaporanData = [];
-            // For reports, we always fetch data as if we're an Admin on the backend
-            // Then, we filter it on the client-side based on the actual user's role
-            switch (type) {
-                case 'iuran':
-                    fetchedData = await getIuranAction('Admin', '');
-                    break;
-                case 'pengeluaran':
-                    fetchedData = await getPengeluaranAction('Admin');
-                    break;
-                case 'warga':
-                    fetchedData = await getWargaAction('Admin', '');
-                    break;
-                case 'keluarga':
-                    fetchedData = await getAnggotaKeluargaAction('Admin', '');
-                    break;
-            }
-            setData(fetchedData);
-        } catch (e) {
-            console.error(`Gagal memuat data laporan ${type}:`, e);
-            setError(`Gagal memuat data laporan ${type}.`);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [user, type]);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
 
     const roleFilteredData = useMemo(() => {
         if (!user) return [];
@@ -559,16 +511,6 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
     };
 
 
-    if (isLoading) {
-        return (
-            <div className="space-y-4 pt-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-        );
-    }
-    
     if (error) {
         return (
              <Alert variant="destructive" className='mt-4'>

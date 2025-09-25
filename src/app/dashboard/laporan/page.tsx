@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
 import LaporanTable from '@/components/dashboard/laporan/laporan-table';
+import { getIuranAction } from '@/app/actions/iuran-actions';
+import { getPengeluaranAction } from '@/app/actions/pengeluaran-actions';
+import { getWargaAction } from '@/app/actions/warga-actions';
+import { getAnggotaKeluargaAction } from '@/app/actions/anggota-keluarga-actions';
+import type { Iuran, Pengeluaran, Warga, AnggotaKeluarga } from '@/lib/types';
+import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const bulanOptions = [
     { value: 'all', label: 'Semua Bulan' },
@@ -17,7 +24,7 @@ const bulanOptions = [
     { value: '5', label: 'Mei' },
     { value: '6', label: 'Juni' },
     { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
+    { value: '8', 'label': 'Agustus' },
     { value: '9', label: 'September' },
     { value: '10', label: 'Oktober' },
     { value: '11', label: 'November' },
@@ -26,11 +33,50 @@ const bulanOptions = [
 
 const tahunOptions = Array.from({ length: 5 }, (_, i) => String(new Date().getFullYear() - i));
 
+type AllLaporanData = {
+    iuran: Iuran[];
+    pengeluaran: Pengeluaran[];
+    warga: Warga[];
+    keluarga: AnggotaKeluargaWithInfo[];
+};
+
 export default function LaporanPage() {
     const { user } = useAuth();
     const [bulan, setBulan] = useState(String(new Date().getMonth() + 1));
     const [tahun, setTahun] = useState(String(new Date().getFullYear()));
     const [activeTab, setActiveTab] = useState('iuran');
+
+    const [allData, setAllData] = useState<AllLaporanData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAllData = async () => {
+            if (!user) return;
+            setIsLoading(true);
+            try {
+                // Fetch all data in parallel
+                const [iuranData, pengeluaranData, wargaData, keluargaData] = await Promise.all([
+                    getIuranAction('Admin', ''),
+                    getPengeluaranAction('Admin'),
+                    getWargaAction('Admin', ''),
+                    getAnggotaKeluargaAction('Admin', '')
+                ]);
+                setAllData({
+                    iuran: iuranData,
+                    pengeluaran: pengeluaranData,
+                    warga: wargaData,
+                    keluarga: keluargaData,
+                });
+            } catch (error) {
+                console.error("Failed to fetch all report data:", error);
+                // Optionally set an error state here
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAllData();
+    }, [user]);
 
     const handlePrint = () => {
         window.print();
@@ -91,18 +137,28 @@ export default function LaporanPage() {
                             <TabsTrigger value="warga">Warga</TabsTrigger>
                             <TabsTrigger value="keluarga">Anggota Keluarga</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="iuran">
-                           <LaporanTable type="iuran" bulan={bulan} tahun={tahun} />
-                        </TabsContent>
-                        <TabsContent value="pengeluaran">
-                             <LaporanTable type="pengeluaran" bulan={bulan} tahun={tahun} />
-                        </TabsContent>
-                        <TabsContent value="warga">
-                            <LaporanTable type="warga" bulan={bulan} tahun={tahun} />
-                        </TabsContent>
-                        <TabsContent value="keluarga">
-                             <LaporanTable type="keluarga" bulan={bulan} tahun={tahun} />
-                        </TabsContent>
+                        {isLoading ? (
+                            <div className="space-y-4 pt-6">
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        ) : (
+                            <>
+                                <TabsContent value="iuran">
+                                    <LaporanTable type="iuran" bulan={bulan} tahun={tahun} data={allData?.iuran ?? []} />
+                                </TabsContent>
+                                <TabsContent value="pengeluaran">
+                                    <LaporanTable type="pengeluaran" bulan={bulan} tahun={tahun} data={allData?.pengeluaran ?? []} />
+                                </TabsContent>
+                                <TabsContent value="warga">
+                                    <LaporanTable type="warga" bulan={bulan} tahun={tahun} data={allData?.warga ?? []} />
+                                </TabsContent>
+                                <TabsContent value="keluarga">
+                                    <LaporanTable type="keluarga" bulan={bulan} tahun={tahun} data={allData?.keluarga ?? []} />
+                                </TabsContent>
+                            </>
+                        )}
                     </Tabs>
                 </CardContent>
             </Card>
