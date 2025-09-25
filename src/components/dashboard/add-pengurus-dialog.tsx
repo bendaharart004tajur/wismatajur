@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode, useEffect } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,21 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Jabatan, Peran, Blok, Pengurus, Warga } from '@/lib/types';
+import { Jabatan, Peran, Blok } from '@/lib/types';
 import { addPengurusAction } from '@/app/actions/pengurus-actions';
-import { getWargaAction } from '@/app/actions/warga-actions';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ChevronsUpDown, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
 interface AddPengurusDialogProps {
   children: ReactNode;
   onPengurusAdded: () => void;
 }
-
-type PengurusForForm = Omit<Pengurus, 'password'>;
 
 const jabatanOptions: Jabatan[] = ['Ketua RT', 'Sekertaris', 'Bendahara', 'Koordinator', 'Humas', 'Seksi Pembangunan', 'Seksi Ketahanan Pangan', 'Seksi Sosial dan Keagamaan', 'Seksi Keamanan', 'Warga'];
 const peranOptions: Peran[] = ['Admin', 'Pengawas', 'Koordinator', 'User'];
@@ -41,26 +34,26 @@ export function AddPengurusDialog({ children, onPengurusAdded }: AddPengurusDial
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const [wargaList, setWargaList] = useState<Warga[]>([]);
-  const [selectedWarga, setSelectedWarga] = useState<Warga | null>(null);
-
+  const [nama, setNama] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [jabatan, setJabatan] = useState<Jabatan | ''>('');
   const [peran, setPeran] = useState<Peran | ''>('');
   const [blok, setBlok] = useState<Blok | ''>('');
   
-  const [popoverOpen, setPopoverOpen] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && user) {
-      getWargaAction('Admin', '').then(setWargaList);
-    }
-  }, [isOpen, user]);
+  const resetForm = () => {
+    setNama('');
+    setEmail('');
+    setPassword('');
+    setJabatan('');
+    setPeran('');
+    setBlok('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedWarga || !jabatan || !peran || !password) {
-        toast({ title: "Form Belum Lengkap", description: "Mohon pilih warga dan isi semua field yang wajib.", variant: "destructive" });
+    if (!nama || !email || !jabatan || !peran || !password) {
+        toast({ title: "Form Belum Lengkap", description: "Mohon isi semua field yang wajib.", variant: "destructive" });
         return;
     }
     if (peran === 'Koordinator' && !blok) {
@@ -70,9 +63,10 @@ export function AddPengurusDialog({ children, onPengurusAdded }: AddPengurusDial
     setIsSubmitting(true);
 
     const formData = {
-        wargaId: selectedWarga.wargaId,
-        nama: selectedWarga.nama,
-        email: selectedWarga.email,
+        // wargaId will be generated on the server if needed, or based on email logic
+        wargaId: `warga-${email}`, 
+        nama: nama,
+        email: email,
         password: password,
         jabatan: jabatan as Jabatan,
         peran: peran as Peran,
@@ -85,12 +79,7 @@ export function AddPengurusDialog({ children, onPengurusAdded }: AddPengurusDial
       toast({ title: 'Sukses', description: result.message });
       onPengurusAdded();
       setIsOpen(false);
-      // Reset form
-      setSelectedWarga(null);
-      setJabatan('');
-      setPeran('');
-      setBlok('');
-      setPassword('');
+      resetForm();
     } else {
       toast({ title: 'Gagal', description: result.message, variant: 'destructive' });
     }
@@ -98,63 +87,27 @@ export function AddPengurusDialog({ children, onPengurusAdded }: AddPengurusDial
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) resetForm();
+    }}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Tambah Pengurus Baru</DialogTitle>
             <DialogDescription>
-              Pilih warga yang akan dijadikan pengurus. Data akan terisi otomatis.
+              Isi data pengurus baru. Akun ini akan digunakan untuk login.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="nama">Nama Warga</Label>
-               <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={popoverOpen}
-                    className="w-full justify-between"
-                  >
-                    {selectedWarga
-                      ? `${selectedWarga.nama} (${selectedWarga.blok}/${selectedWarga.norumah})`
-                      : "Pilih warga..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                  <Command>
-                    <CommandInput placeholder="Cari warga..." />
-                    <CommandList>
-                        <CommandEmpty>Warga tidak ditemukan.</CommandEmpty>
-                        <CommandGroup>
-                        {wargaList.map((warga) => (
-                            <CommandItem
-                            key={warga.wargaId}
-                            value={warga.nama}
-                            onSelect={(currentValue) => {
-                                const wargaSelection = wargaList.find(w => w.nama.toLowerCase() === currentValue.toLowerCase()) || null;
-                                setSelectedWarga(wargaSelection);
-                                setPopoverOpen(false);
-                            }}
-                            >
-                            <Check
-                                className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedWarga?.wargaId === warga.wargaId ? "opacity-100" : "opacity-0"
-                                )}
-                            />
-                            {warga.nama} ({warga.blok}/{warga.norumah})
-                            </CommandItem>
-                        ))}
-                        </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Label htmlFor="nama">Nama Lengkap</Label>
+              <Input id="nama" value={nama} onChange={(e) => setNama(e.target.value)} required placeholder="Masukkan nama" />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Masukkan email untuk login" />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

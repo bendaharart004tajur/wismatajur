@@ -10,7 +10,7 @@ import {
 } from '@/lib/google-sheets';
 
 // Action to get all pengurus
-export async function getPengurusAction(): Promise<Pengurus[]> {
+export async function getPengurusAction(): Promise<Omit<Pengurus, 'password'>[]> {
     try {
         // We get the full data on the server, but we won't expose passwords to the client.
         const pengurusList = await getPengurusDataFromSheet();
@@ -31,6 +31,17 @@ export async function addPengurusAction(data: AddPengurusData): Promise<{ succes
     if (!data.password) {
       throw new Error('Password is required for a new pengurus.');
     }
+    
+    if (!data.email) {
+        throw new Error('Email is required for a new pengurus.');
+    }
+    
+    // Check if email already exists
+    const existingPengurus = await getPengurusDataFromSheet();
+    if (existingPengurus.some(p => p.email.toLowerCase() === data.email.toLowerCase())) {
+        return { success: false, message: 'Email sudah terdaftar. Silakan gunakan email lain.', data: null };
+    }
+
 
     // The ID and timestamp are generated here, and password will be hashed in the service layer.
     const newPengurusData: Pengurus = {
@@ -58,6 +69,17 @@ export async function updatePengurusAction(
   data: Partial<Pengurus> & { id: string; password?: string }
 ): Promise<{ success: boolean; message: string; data: Omit<Pengurus, 'password'> | null }> {
   try {
+
+    // Check if email is being changed and if the new one already exists
+    if (data.email) {
+        const allPengurus = await getPengurusDataFromSheet();
+        const existingPengurusWithEmail = allPengurus.find(p => p.email.toLowerCase() === data.email!.toLowerCase());
+        if (existingPengurusWithEmail && existingPengurusWithEmail.id !== data.id) {
+            return { success: false, message: 'Email sudah digunakan oleh pengurus lain.', data: null };
+        }
+    }
+
+
     const updatedPengurus = await updatePengurusInSheet(data);
     revalidatePath('/dashboard/pengurus');
     

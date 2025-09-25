@@ -19,11 +19,12 @@ interface EditPengurusDialogProps {
   onPengurusUpdated: () => void;
 }
 
-const JABATAN_OPTIONS: Jabatan[] = ['Ketua RT', 'Sekertaris', 'Bendahara', 'Koordinator', 'Humas', 'Seksi Pembangunan', 'Seksi Ketahanan Pangan', 'Seksi Sosial dan Keagamaan', 'Warga'];
+const JABATAN_OPTIONS: Jabatan[] = ['Ketua RT', 'Sekertaris', 'Bendahara', 'Koordinator', 'Humas', 'Seksi Pembangunan', 'Seksi Ketahanan Pangan', 'Seksi Sosial dan Keagamaan', 'Warga', 'Seksi Keamanan'];
 const PERAN_OPTIONS: Peran[] = ['Admin', 'Pengawas', 'Koordinator', 'User'];
 const BLOK_OPTIONS: Blok[] = ['D1', 'D2', 'D3', 'D4', 'D5'];
 
 export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpdated }: EditPengurusDialogProps) {
+  const [email, setEmail] = useState('');
   const [jabatan, setJabatan] = useState<Jabatan>(pengurus.jabatan);
   const [peran, setPeran] = useState<Peran>(pengurus.peran);
   const [blok, setBlok] = useState<Blok | undefined>(pengurus.blok);
@@ -33,6 +34,7 @@ export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpd
   
   useEffect(() => {
     if (open) {
+      setEmail(pengurus.email);
       setJabatan(pengurus.jabatan);
       setPeran(pengurus.peran);
       setBlok(pengurus.blok);
@@ -50,6 +52,7 @@ export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpd
       
       const updatedData: Partial<Pengurus> & { id: string } = {
         id: pengurus.id,
+        email: email,
         jabatan,
         peran,
         blok: peran === 'Koordinator' ? blok : undefined,
@@ -79,6 +82,17 @@ export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpd
           <DialogDescription>Ubah detail untuk {pengurus.nama}. Klik simpan jika sudah selesai.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+           <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input 
+              id="email" 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              placeholder="Masukkan email"
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password Baru</Label>
             <Input 
@@ -114,7 +128,7 @@ export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpd
           {peran === 'Koordinator' && (
             <div className="space-y-2">
               <Label htmlFor="blok">Blok Koordinator</Label>
-               <Select value={blok} onValueChange={(value) => setBlok(value as Blok)}>
+               <Select value={blok || ''} onValueChange={(value) => setBlok(value as Blok)}>
                 <SelectTrigger id="blok">
                     <SelectValue placeholder="Pilih Blok" />
                 </SelectTrigger>
