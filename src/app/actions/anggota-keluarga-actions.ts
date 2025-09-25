@@ -9,21 +9,23 @@ import {
   deleteAnggotaKeluargaFromSheet,
   getWargaDataFromSheet,
 } from '@/lib/google-sheets';
-import type { AnggotaKeluarga, Peran } from '@/lib/types';
+import type { AnggotaKeluarga, Peran, Warga } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
 
 
 export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string): Promise<AnggotaKeluargaWithInfo[]> {
   try {
-    if (peran === 'Admin' || peran === 'Pengawas') {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
       const allWarga = await getWargaDataFromSheet('Admin', '');
       
       const wargaMap = new Map(allWarga.map(w => [w.wargaId, {
         nama: w.nama,
-        alamat: `Blok ${w.blok} / ${w.norumah}`
+        alamat: `Blok ${w.blok}/${w.norumah}`,
+        blok: w.blok,
+        wargaData: w
       }]));
-      
+
+    if (peran === 'Admin' || peran === 'Pengawas') {
       const enrichedAnggota = allAnggota.map(anggota => {
         const wargaInfo = wargaMap.get(anggota.wargaId);
         return {
@@ -32,15 +34,33 @@ export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string): P
             alamat: wargaInfo?.alamat || '-',
         }
       });
-      
       return enrichedAnggota;
+    } 
+    
+    // For Koordinator and User, filter first, then enrich
+    let filteredAnggota: AnggotaKeluarga[];
 
-    } else {
-      // User gets only their own anggota keluarga data
-      const allAnggota = await getAnggotaKeluargaDataFromSheet();
-      const anggota = allAnggota.filter(a => a.wargaId === wargaId);
-      return anggota.map(a => ({ ...a, kepalaKeluarga: '', alamat: '' })); // Extra fields not needed for user view
+    if (peran === 'Koordinator') {
+        const userWarga = allWarga.find(w => w.wargaId === wargaId);
+        const blokKoordinator = userWarga?.blok;
+        
+        if (!blokKoordinator) return [];
+
+        const wargaDiBlok = new Set(allWarga.filter(w => w.blok === blokKoordinator).map(w => w.wargaId));
+        filteredAnggota = allAnggota.filter(a => wargaDiBlok.has(a.wargaId));
+    
+    } else { // User
+      filteredAnggota = allAnggota.filter(a => a.wargaId === wargaId);
     }
+    
+    return filteredAnggota.map(anggota => {
+        const wargaInfo = wargaMap.get(anggota.wargaId);
+        return {
+            ...anggota,
+            kepalaKeluarga: wargaInfo?.nama || 'Tidak Diketahui',
+            alamat: wargaInfo?.alamat || '-',
+        }
+    });
 
   } catch (error) {
     console.error('Error in getAnggotaKeluargaAction:', error);
