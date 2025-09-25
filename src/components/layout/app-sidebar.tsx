@@ -23,7 +23,7 @@ const navItems = [
   { href: '/dashboard/anggota-keluarga', label: 'Anggota Keluarga', icon: UserSquare2, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/iuran', label: 'Iuran', icon: DollarSign, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/pendapatan', label: 'Pendapatan', icon: TrendingUp, roles: ['Admin', 'Pengawas'] },
-  { href: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: Wallet, roles: ['Admin', 'Pengawas'] },
+  { href: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: Wallet },
   { href: '/dashboard/inventaris', label: 'Inventaris', icon: Warehouse },
   { href: '/dashboard/pengumuman', label: 'Pengumuman', icon: Megaphone },
   { href: '/dashboard/umkm', label: 'UMKM', icon: Store },

@@ -27,14 +27,12 @@ const bulanOptions = [
 const tahunOptions = Array.from({ length: 5 }, (_, i) => String(new Date().getFullYear() - i));
 
 export default function LaporanPage() {
-    // Default to the current month (1-indexed) and current year
+    const { user } = useAuth();
     const [bulan, setBulan] = useState(String(new Date().getMonth() + 1));
     const [tahun, setTahun] = useState(String(new Date().getFullYear()));
     const [activeTab, setActiveTab] = useState('iuran');
 
     const handlePrint = () => {
-        // This is a placeholder for the print functionality
-        // It uses the browser's print dialog
         window.print();
     };
     
@@ -48,10 +46,12 @@ export default function LaporanPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                     <Button onClick={handlePrint}>
-                        <Printer className="mr-2 h-4 w-4" />
-                        Print / Export PDF
-                    </Button>
+                     {user && (user.peran === 'Admin' || user.peran === 'Pengawas') && (
+                        <Button onClick={handlePrint}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print / Export PDF
+                        </Button>
+                     )}
                 </div>
             </div>
 

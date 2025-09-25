@@ -75,12 +75,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                     fetchedData = await getIuranAction('Admin', '');
                     break;
                 case 'pengeluaran':
-                    if (user.peran !== 'Admin' && user.peran !== 'Pengawas') {
-                        setError('Hanya Admin dan Pengawas yang dapat melihat laporan pengeluaran.');
-                        fetchedData = [];
-                    } else {
-                        fetchedData = await getPengeluaranAction('Admin');
-                    }
+                    fetchedData = await getPengeluaranAction('Admin');
                     break;
                 case 'warga':
                     fetchedData = await getWargaAction('Admin', '');
@@ -133,7 +128,6 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 }
                 break;
             case 'pengeluaran':
-                // Already handled in fetchData
                 return data;
         }
         return data;
@@ -614,16 +608,14 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                  {type === 'warga' && totalWarga > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">TOTAL SEMUA BLOK</TableCell>
-                            <TableCell className="text-left font-bold">{totalWarga} Warga</TableCell>
+                            <TableCell colSpan={5} className="text-center font-bold">TOTAL SEMUA WARGA: {totalWarga}</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
                 {type === 'keluarga' && totalAnggota > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">TOTAL SEMUA BLOK</TableCell>
-                            <TableCell className="text-left font-bold">{totalAnggota} Anggota</TableCell>
+                            <TableCell colSpan={5} className="text-center font-bold">TOTAL SEMUA ANGGOTA: {totalAnggota}</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
