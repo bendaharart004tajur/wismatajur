@@ -442,7 +442,9 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 return Object.entries(groupedWarga).map(([blok, wargaList]) => (
                     <React.Fragment key={blok}>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
-                            <TableCell colSpan={5} className="font-bold">Blok {blok}</TableCell>
+                            <TableCell colSpan={5} className="font-bold">
+                                Blok {blok} ({wargaList.length} Warga)
+                            </TableCell>
                         </TableRow>
                         {(wargaList as Warga[]).map(item => (
                              <TableRow key={item.wargaId}>
@@ -511,12 +513,6 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 )}
                  {type === 'warga' && totalWarga > 0 && (
                     <TableFooter>
-                        {Object.entries(groupedWarga).map(([blok, wargaList]) => (
-                            <TableRow key={`footer-${blok}`} className="bg-muted/50 font-medium">
-                                <TableCell colSpan={4} className="text-right">Total Warga Blok {blok}</TableCell>
-                                <TableCell className="text-left font-bold">{(wargaList as Warga[]).length} Warga</TableCell>
-                            </TableRow>
-                        ))}
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
                             <TableCell colSpan={4} className="text-right">GRAND TOTAL WARGA</TableCell>
                             <TableCell className="text-left">{totalWarga} Warga</TableCell>
