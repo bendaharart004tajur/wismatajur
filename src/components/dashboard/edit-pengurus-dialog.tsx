@@ -20,7 +20,7 @@ interface EditPengurusDialogProps {
 }
 
 const JABATAN_OPTIONS: Jabatan[] = ['Ketua RT', 'Sekertaris', 'Bendahara', 'Koordinator', 'Humas', 'Seksi Pembangunan', 'Seksi Ketahanan Pangan', 'Seksi Sosial dan Keagamaan', 'Warga'];
-const PERAN_OPTIONS: Peran[] = ['Admin', 'Koordinator', 'User'];
+const PERAN_OPTIONS: Peran[] = ['Admin', 'Pengawas', 'Koordinator', 'User'];
 const BLOK_OPTIONS: Blok[] = ['D1', 'D2', 'D3', 'D4', 'D5'];
 
 export function EditPengurusDialog({ pengurus, open, onOpenChange, onPengurusUpdated }: EditPengurusDialogProps) {

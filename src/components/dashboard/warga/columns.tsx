@@ -1,6 +1,6 @@
 'use client';
 
-import { Warga } from '@/lib/types';
+import { Warga, Peran } from '@/lib/types';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 
@@ -16,8 +16,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { EditWargaDialog } from './edit-warga-dialog';
 import { DeleteWargaAlert } from './delete-warga-alert';
+import { useAuth } from '@/context/AuthContext';
 
 function AksiKolom({ item, refreshData }: { item: Warga, refreshData: () => void }) {
+    const { user } = useAuth();
+    if (user?.peran !== 'Admin') return null;
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -44,7 +48,8 @@ function AksiKolom({ item, refreshData }: { item: Warga, refreshData: () => void
     );
 }
 
-export const columns = (refreshData: () => void): ColumnDef<Warga>[] => [
+export const columns = (refreshData: () => void, userRole?: Peran): ColumnDef<Warga>[] => {
+    const baseColumns: ColumnDef<Warga>[] = [
     {
         accessorKey: 'nama',
         header: ({ column }) => {
@@ -98,14 +103,18 @@ export const columns = (refreshData: () => void): ColumnDef<Warga>[] => [
         accessorKey: 'phone',
         header: 'No. Telepon',
     },
-    {
-        id: 'actions',
-        cell: ({ row }) => {
-            const item = row.original;
-            // Admins can perform actions
-            // TODO: Add logic for Koordinator/User if needed
-            return <AksiKolom item={item} refreshData={refreshData} />;
-        },
-        enableHiding: false,
-    },
-];
+    ]
+
+    if (userRole === 'Admin') {
+        baseColumns.push({
+            id: 'actions',
+            cell: ({ row }) => {
+                const item = row.original;
+                return <AksiKolom item={item} refreshData={refreshData} />;
+            },
+            enableHiding: false,
+        });
+    }
+
+    return baseColumns;
+};

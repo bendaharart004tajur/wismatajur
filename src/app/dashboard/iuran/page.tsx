@@ -49,7 +49,7 @@ export default function IuranPage() {
             Daftar catatan pembayaran iuran warga.
           </p>
         </div>
-        {canPerformActions && (
+        {user?.peran === 'Admin' && (
             <AddIuranDialog onSuccess={fetchIuran} />
         )}
       </div>

@@ -13,7 +13,7 @@ import type { AnggotaKeluarga, Peran } from '@/lib/types';
 
 export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string) {
   try {
-    if (peran === 'Admin') {
+    if (peran === 'Admin' || peran === 'Pengawas') {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
       const allWarga = await getWargaDataFromSheet('Admin', '');
       

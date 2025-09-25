@@ -35,8 +35,7 @@ export default function PengumumanPage() {
     fetchPengumuman();
   }, [fetchPengumuman]);
 
-  const canPerformActions = user?.peran === 'Admin';
-  const tableColumns = columns(fetchPengumuman, canPerformActions);
+  const tableColumns = columns(fetchPengumuman, user?.peran === 'Admin');
   
   return (
     <div className="space-y-6">
@@ -47,7 +46,7 @@ export default function PengumumanPage() {
             Informasi dan pengumuman penting untuk warga.
           </p>
         </div>
-        {canPerformActions && (
+        {user?.peran === 'Admin' && (
             <AddPengumumanDialog onSuccess={fetchPengumuman} />
         )}
       </div>

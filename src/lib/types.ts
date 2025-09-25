@@ -1,5 +1,5 @@
-export type Jabatan = 'Ketua RT' | 'Sekertaris' | 'Bendahara' | 'Koordinator' | 'Humas' | 'Seksi Pembangunan' | 'Seksi Ketahanan Pangan' | 'Seksi Sosial dan Keagamaan' | 'Warga';
-export type Peran = 'Admin' | 'Koordinator' | 'User';
+export type Jabatan = 'Ketua RT' | 'Sekertaris' | 'Bendahara' | 'Koordinator' | 'Humas' | 'Seksi Pembangunan' | 'Seksi Ketahanan Pangan' | 'Seksi Sosial dan Keagamaan' | 'Seksi Keamanan' | 'Warga';
+export type Peran = 'Admin' | 'Pengawas' | 'Koordinator' | 'User';
 export type Blok = 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
 export type TipeKegiatan = 'pemasukan' | 'pengeluaran';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Pengurus } from '@/lib/types';
+import type { Pengurus, Peran } from '@/lib/types';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,9 @@ function AksiKolom({ item, refreshData }: { item: PengurusWithoutPassword, refre
     );
 }
 
-export const columns = (refreshData: () => void): ColumnDef<PengurusWithoutPassword>[] => [
+export const columns = (refreshData: () => void, userRole?: Peran): ColumnDef<PengurusWithoutPassword>[] => {
+    
+    const baseColumns: ColumnDef<PengurusWithoutPassword>[] = [
     {
         accessorKey: 'nama',
         header: ({ column }) => {
@@ -91,19 +93,29 @@ export const columns = (refreshData: () => void): ColumnDef<PengurusWithoutPassw
         header: 'Peran',
         cell: ({ row }) => {
             const peran = row.getValue('peran') as string;
-            return <Badge variant={peran === 'Admin' ? 'default' : 'secondary'}>{peran}</Badge>;
+            let variant: "default" | "secondary" | "destructive" | "outline" | null | undefined = "secondary";
+            if (peran === 'Admin') variant = 'default';
+            if (peran === 'Pengawas') variant = 'outline';
+
+            return <Badge variant={variant}>{peran}</Badge>;
         }
     },
     {
         accessorKey: 'email',
         header: 'Email',
     },
-    {
-        id: 'actions',
-        cell: ({ row }) => {
-            const item = row.original;
-            return <AksiKolom item={item} refreshData={refreshData} />;
-        },
-        enableHiding: false,
-    },
-];
+    ];
+
+    if (userRole === 'Admin') {
+        baseColumns.push({
+            id: 'actions',
+            cell: ({ row }) => {
+                const item = row.original;
+                return <AksiKolom item={item} refreshData={refreshData} />;
+            },
+            enableHiding: false,
+        });
+    }
+    
+    return baseColumns;
+};

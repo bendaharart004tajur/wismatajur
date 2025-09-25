@@ -31,7 +31,7 @@ export async function getIuranAction(peran: Peran, wargaId: string, blok?: strin
 
     let filteredIuran: Iuran[];
 
-    if (peran === 'Admin') {
+    if (peran === 'Admin' || peran === 'Pengawas') {
       filteredIuran = enrichedIuran;
     } else if (peran === 'Koordinator' && blok) {
       filteredIuran = enrichedIuran.filter(iuran => iuran.blok === blok);

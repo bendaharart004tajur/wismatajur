@@ -21,7 +21,7 @@ export default function PendapatanPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPendapatan = useCallback(() => {
-    if (user?.peran !== 'Admin') {
+    if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
         setIsLoading(false);
         return;
     }
@@ -40,14 +40,14 @@ export default function PendapatanPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [user?.peran, toast]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchPendapatan();
   }, [fetchPendapatan]);
 
   // Handle non-admin access
-  if (!user || user.peran !== 'Admin') {
+  if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
     return (
       <div className="space-y-6">
         <div>
@@ -70,7 +70,7 @@ export default function PendapatanPage() {
     );
   }
 
-  const tableColumns = columns(fetchPendapatan);
+  const tableColumns = columns(fetchPendapatan, user.peran);
 
   return (
     <div className="space-y-6">
@@ -83,7 +83,7 @@ export default function PendapatanPage() {
             Catatan semua pendapatan lain-lain yang masuk ke kas RT.
           </p>
         </div>
-        <AddPendapatanDialog onSuccess={fetchPendapatan} />
+        {user.peran === 'Admin' && <AddPendapatanDialog onSuccess={fetchPendapatan} />}
       </div>
       
       <Card>

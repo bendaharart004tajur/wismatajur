@@ -12,7 +12,7 @@ import type { Pendapatan, Peran } from '@/lib/types';
 
 // Action to get all income records
 export async function getPendapatanAction(peran: Peran): Promise<Pendapatan[]> {
-  if (peran !== 'Admin') {
+  if (peran !== 'Admin' && peran !== 'Pengawas') {
     return [];
   }
   try {

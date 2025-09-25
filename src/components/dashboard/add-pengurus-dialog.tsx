@@ -32,7 +32,7 @@ interface AddPengurusDialogProps {
 type PengurusForForm = Omit<Pengurus, 'password'>;
 
 const jabatanOptions: Jabatan[] = ['Ketua RT', 'Sekertaris', 'Bendahara', 'Koordinator', 'Humas', 'Seksi Pembangunan', 'Seksi Ketahanan Pangan', 'Seksi Sosial dan Keagamaan', 'Seksi Keamanan', 'Warga'];
-const peranOptions: Peran[] = ['Admin', 'Koordinator', 'User'];
+const peranOptions: Peran[] = ['Admin', 'Pengawas', 'Koordinator', 'User'];
 const blokOptions: Blok[] = ['D1', 'D2', 'D3', 'D4', 'D5'];
 
 export function AddPengurusDialog({ children, onPengurusAdded }: AddPengurusDialogProps) {

@@ -24,7 +24,7 @@ export default function PengurusPage() {
   const { toast } = useToast();
   
   const fetchData = useCallback(() => {
-    if (user?.peran !== 'Admin') {
+    if (user?.peran !== 'Admin' && user?.peran !== 'Pengawas') {
         setLoading(false);
         return;
     };
@@ -47,7 +47,7 @@ export default function PengurusPage() {
     fetchData();
   }, [fetchData]);
 
-  if (user?.peran !== 'Admin') {
+  if (user?.peran !== 'Admin' && user?.peran !== 'Pengawas') {
     return (
       <Card>
         <CardHeader><CardTitle>Akses Ditolak</CardTitle></CardHeader>
@@ -56,7 +56,7 @@ export default function PengurusPage() {
     );
   }
 
-  const tableColumns = columns(fetchData);
+  const tableColumns = columns(fetchData, user?.peran);
 
   return (
     <div className="space-y-6">
@@ -65,11 +65,13 @@ export default function PengurusPage() {
           <h1 className="text-2xl font-headline font-bold">Data Pengurus RT</h1>
           <p className="text-muted-foreground">Daftar pengurus RT 004 Wisma Tajur.</p>
         </div>
+        {user?.peran === 'Admin' && (
          <AddPengurusDialog onPengurusAdded={fetchData}>
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" /> Tambah Pengurus
           </Button>
         </AddPengurusDialog>
+        )}
       </div>
 
        <Card>

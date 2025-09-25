@@ -21,14 +21,14 @@ const navItems = [
   { href: '/dashboard/warga', label: 'Warga', icon: Users },
   { href: '/dashboard/anggota-keluarga', label: 'Anggota Keluarga', icon: UserSquare2 },
   { href: '/dashboard/iuran', label: 'Iuran', icon: DollarSign },
-  { href: '/dashboard/pendapatan', label: 'Pendapatan', icon: TrendingUp },
+  { href: '/dashboard/pendapatan', label: 'Pendapatan', icon: TrendingUp, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: Wallet },
   { href: '/dashboard/inventaris', label: 'Inventaris', icon: Warehouse },
   { href: '/dashboard/pengumuman', label: 'Pengumuman', icon: Megaphone },
-  { href: '/dashboard/laporan', label: 'Laporan', icon: FileText, adminOnly: true },
+  { href: '/dashboard/laporan', label: 'Laporan', icon: FileText, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/umkm', label: 'UMKM', icon: Store },
   { href: '/dashboard/arisan', label: 'Arisan', icon: Dice5 },
-  { href: '/dashboard/pengurus', label: 'Pengurus RT', icon: UserCog, adminOnly: true },
+  { href: '/dashboard/pengurus', label: 'Pengurus RT', icon: UserCog, roles: ['Admin', 'Pengawas'] },
 ];
 
 export default function AppSidebar() {
@@ -43,7 +43,7 @@ export default function AppSidebar() {
       <SidebarContent>
         <SidebarMenu>
           {navItems.map((item) => {
-            if (item.adminOnly && user?.peran !== 'Admin') {
+            if (item.roles && user && !item.roles.includes(user.peran)) {
               return null;
             }
             return (

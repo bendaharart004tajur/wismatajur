@@ -38,14 +38,14 @@ export default function LaporanPage() {
         window.print();
     };
 
-    if (user?.peran !== 'Admin') {
+    if (user?.peran !== 'Admin' && user?.peran !== 'Pengawas') {
         return (
             <Card>
                 <CardHeader>
                     <CardTitle>Akses Ditolak</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin yang dapat melihat laporan.</p>
+                    <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin dan Pengawas yang dapat melihat laporan.</p>
                 </CardContent>
             </Card>
         );

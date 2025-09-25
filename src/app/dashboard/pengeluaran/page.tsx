@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Pengeluaran } from '@/lib/types';
 import { getPengeluaranAction } from '@/app/actions/pengeluaran-actions';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { columns } from '@/components/dashboard/pengeluaran/columns';
@@ -20,7 +20,7 @@ export default function PengeluaranPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPengeluaran = useCallback(() => {
-    if (user?.peran !== 'Admin') {
+    if (!user) {
         setIsLoading(false);
         return;
     }
@@ -39,27 +39,13 @@ export default function PengeluaranPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [user?.peran, toast]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchPengeluaran();
   }, [fetchPengeluaran]);
 
-  // Handle non-admin access
-  if (!user || user.peran !== 'Admin') {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Akses Ditolak</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin yang dapat melihat data pengeluaran.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const tableColumns = columns(fetchPengeluaran);
+  const tableColumns = columns(fetchPengeluaran, user?.peran === 'Admin');
 
   return (
     <div className="space-y-6">
@@ -70,7 +56,7 @@ export default function PengeluaranPage() {
             Daftar semua transaksi pengeluaran kas RT yang tercatat.
           </p>
         </div>
-        <AddPengeluaranDialog onSuccess={fetchPengeluaran} />
+        {user?.peran === 'Admin' && <AddPengeluaranDialog onSuccess={fetchPengeluaran} />}
       </div>
       
       <Card>

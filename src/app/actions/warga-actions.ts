@@ -17,7 +17,7 @@ export async function getWargaAction(peran: Peran, wargaId?: string, blok?: stri
 export async function getWargaListForAnggotaKeluargaAction() {
   try {
     // Memanggil dengan peran 'Admin' untuk mendapatkan semua data
-    const allWarga = await getWargaDataFromSheet(); 
+    const allWarga = await getWargaDataFromSheet('Admin'); 
     // Memilih hanya field yang diperlukan
     return allWarga.map(w => ({ 
       wargaId: w.wargaId,
@@ -67,7 +67,10 @@ export async function updateWargaAction(warga: Partial<Warga> & { wargaId: strin
     }
 }
 
-export async function deleteWargaAction(wargaId: string) {
+export async function deleteWargaAction(peran: Peran, wargaId: string) {
+    if (peran !== 'Admin') {
+        return { success: false, message: 'Akses ditolak: Hanya Admin yang dapat menghapus data.' };
+    }
     try {
         await deleteWargaFromSheet(wargaId);
         revalidatePath('/dashboard/warga');

@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useAuth } from '@/context/AuthContext';
 
 interface DeleteWargaAlertProps {
   warga: Warga;
@@ -25,14 +26,16 @@ interface DeleteWargaAlertProps {
 }
 
 export function DeleteWargaAlert({ warga, onWargaDeleted, children }: DeleteWargaAlertProps) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleDelete() {
+    if (!user) return;
     setIsSubmitting(true);
 
     try {
-      const result = await deleteWargaAction(warga.wargaId);
+      const result = await deleteWargaAction(user.peran, warga.wargaId);
       if (result.success) {
         toast({
           title: 'Sukses',

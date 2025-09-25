@@ -54,7 +54,7 @@ export default function AnggotaKeluargaPage() {
                     <div className="flex-1">
                         <CardTitle>Anggota Keluarga</CardTitle>
                         <CardDescription>
-                            {user?.peran === 'Admin' ? 
+                            {user?.peran === 'Admin' || user?.peran === 'Pengawas' ? 
                             'Daftar semua anggota keluarga dari seluruh warga.' :
                             'Daftar anggota keluarga yang terdaftar atas nama Anda.'} 
                         </CardDescription>
@@ -84,7 +84,7 @@ export default function AnggotaKeluargaPage() {
                         </div>
                     </div>
                 ) : (
-                    <DataTable columns={tableColumns} data={data} isAdmin={user?.peran === 'Admin'} />
+                    <DataTable columns={tableColumns} data={data} isAdmin={user?.peran === 'Admin' || user?.peran === 'Pengawas'} />
                 )}
             </CardContent>
         </Card>

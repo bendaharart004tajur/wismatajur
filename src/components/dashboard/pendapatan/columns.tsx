@@ -1,6 +1,6 @@
 'use client';
 
-import { Pendapatan } from '@/lib/types';
+import { Pendapatan, Peran } from '@/lib/types';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,9 @@ function AksiKolom({ item, refreshData }: { item: Pendapatan, refreshData: () =>
     );
 }
 
-export const columns = (refreshData: () => void): ColumnDef<Pendapatan>[] => [
+export const columns = (refreshData: () => void, userRole?: Peran): ColumnDef<Pendapatan>[] => {
+    
+    const baseColumns: ColumnDef<Pendapatan>[] = [
     {
         accessorKey: 'tanggal',
         header: ({ column }) => {
@@ -102,12 +104,18 @@ export const columns = (refreshData: () => void): ColumnDef<Pendapatan>[] => [
             return <div>{formatted}</div>
         }
     },
-    {
-        id: 'actions',
-        cell: ({ row }) => {
-            const item = row.original;
-            return <AksiKolom item={item} refreshData={refreshData} />;
-        },
-        enableHiding: false,
-    },
-];
+    ];
+
+    if (userRole === 'Admin') {
+        baseColumns.push({
+            id: 'actions',
+            cell: ({ row }) => {
+                const item = row.original;
+                return <AksiKolom item={item} refreshData={refreshData} />;
+            },
+            enableHiding: false,
+        });
+    }
+
+    return baseColumns;
+};

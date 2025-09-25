@@ -46,7 +46,9 @@ function AksiKolom({ item, refreshData }: { item: Pengeluaran, refreshData: () =
     );
 }
 
-export const columns = (refreshData: () => void): ColumnDef<Pengeluaran>[] => [
+export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<Pengeluaran>[] => {
+    
+    const baseColumns: ColumnDef<Pengeluaran>[] = [
     {
         accessorKey: 'tanggal',
         header: ({ column }) => {
@@ -130,11 +132,17 @@ export const columns = (refreshData: () => void): ColumnDef<Pengeluaran>[] => [
         accessorKey: 'dicatatOleh',
         header: 'Dicatat Oleh',
     },
-    {
-        id: 'actions',
-        cell: ({ row }) => {
-            const item = row.original;
-            return <AksiKolom item={item} refreshData={refreshData} />;
-        },
-    },
-];
+    ];
+
+    if (isAdmin) {
+        baseColumns.push({
+            id: 'actions',
+            cell: ({ row }) => {
+                const item = row.original;
+                return <AksiKolom item={item} refreshData={refreshData} />;
+            },
+        });
+    }
+
+    return baseColumns;
+};

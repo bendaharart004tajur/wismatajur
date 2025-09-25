@@ -34,8 +34,7 @@ export default function InventarisPage() {
     fetchInventaris();
   }, [fetchInventaris]);
 
-  const canPerformActions = user?.peran === 'Admin';
-  const tableColumns = columns(fetchInventaris, canPerformActions);
+  const tableColumns = columns(fetchInventaris, user?.peran === 'Admin');
   
   return (
     <div className="space-y-6">
@@ -46,7 +45,7 @@ export default function InventarisPage() {
                   Daftar barang inventaris milik RT 004.
                 </p>
             </div>
-            {canPerformActions && (
+            {user?.peran === 'Admin' && (
                 <AddInventarisDialog onSuccess={fetchInventaris} />
             )}
         </div>
