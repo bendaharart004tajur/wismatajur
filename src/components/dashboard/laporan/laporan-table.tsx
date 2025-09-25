@@ -57,7 +57,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
     const [error, setError] = useState<string | null>(null);
 
     const fetchData = useCallback(async () => {
-        if (!user || user.peran !== 'Admin') {
+        if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
             setError('Akses ditolak.');
             setIsLoading(false);
             return;
@@ -69,16 +69,16 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             let fetchedData: LaporanData = [];
             switch (type) {
                 case 'iuran':
-                    fetchedData = await getIuranAction('Admin', '');
+                    fetchedData = await getIuranAction(user.peran, user.wargaId);
                     break;
                 case 'pengeluaran':
-                    fetchedData = await getPengeluaranAction('Admin');
+                    fetchedData = await getPengeluaranAction(user.peran);
                     break;
                 case 'warga':
-                    fetchedData = await getWargaAction('Admin', '');
+                    fetchedData = await getWargaAction(user.peran, user.wargaId);
                     break;
                 case 'keluarga':
-                    fetchedData = await getAnggotaKeluargaAction('Admin', '');
+                    fetchedData = await getAnggotaKeluargaAction(user.peran, user.wargaId);
                     break;
             }
             setData(fetchedData);
