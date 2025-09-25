@@ -330,6 +330,28 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
 
     }, [filteredData, type]);
 
+    const { groupedKeluarga, totalAnggota } = useMemo(() => {
+        if (type !== 'keluarga' || !filteredData) {
+            return { groupedKeluarga: {}, totalAnggota: 0 };
+        }
+
+        const sortedData = (filteredData as AnggotaKeluargaWithInfo[]).sort((a, b) => {
+            return (a.kepalaKeluarga || '').localeCompare(b.kepalaKeluarga || '');
+        });
+
+        const grouped: { [kepalaKeluargaKey: string]: AnggotaKeluargaWithInfo[] } = {};
+
+        for (const item of sortedData) {
+            const kepalaKeluargaKey = item.kepalaKeluarga || 'Tidak Diketahui';
+            if (!grouped[kepalaKeluargaKey]) {
+                grouped[kepalaKeluargaKey] = [];
+            }
+            grouped[kepalaKeluargaKey].push(item);
+        }
+
+        return { groupedKeluarga: grouped, totalAnggota: sortedData.length };
+    }, [filteredData, type]);
+
 
     const renderHeaders = () => {
         switch (type) {
@@ -357,7 +379,11 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             );
             case 'keluarga': return (
                 <TableRow>
-                    <TableHead>Kepala Keluarga</TableHead><TableHead>Alamat</TableHead><TableHead>Nama Anggota</TableHead><TableHead>Hubungan</TableHead><TableHead>Jenis Kelamin</TableHead>
+                    <TableHead>Alamat</TableHead>
+                    <TableHead>Nama Anggota</TableHead>
+                    <TableHead>Hubungan</TableHead>
+                    <TableHead>Jenis Kelamin</TableHead>
+                    <TableHead>Tanggal Lahir</TableHead>
                 </TableRow>
             );
             default: return null;
@@ -457,9 +483,25 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                         ))}
                     </React.Fragment>
                 ));
-            case 'keluarga': return (filteredData as AnggotaKeluargaWithInfo[]).map(item => (
-                <TableRow key={item.anggotaId}><TableCell>{item.kepalaKeluarga}</TableCell><TableCell>{item.alamat}</TableCell><TableCell>{item.nama}</TableCell><TableCell>{item.hubungan}</TableCell><TableCell>{item.jeniskelamin}</TableCell></TableRow>
-            ));
+            case 'keluarga': 
+                return Object.entries(groupedKeluarga).map(([kepalaKeluarga, anggotaList]) => (
+                    <React.Fragment key={kepalaKeluarga}>
+                        <TableRow className="bg-muted/50 hover:bg-muted/50">
+                            <TableCell colSpan={5} className="font-bold">
+                                Kepala Keluarga: {kepalaKeluarga} ({anggotaList.length} Anggota)
+                            </TableCell>
+                        </TableRow>
+                        {(anggotaList as AnggotaKeluargaWithInfo[]).map(item => (
+                             <TableRow key={item.anggotaId}>
+                                <TableCell className="pl-8">{item.alamat}</TableCell>
+                                <TableCell>{item.nama}</TableCell>
+                                <TableCell>{item.hubungan}</TableCell>
+                                <TableCell>{item.jeniskelamin}</TableCell>
+                                <TableCell>{formatDate(item.tanggallahir)}</TableCell>
+                            </TableRow>
+                        ))}
+                    </React.Fragment>
+                ));
             default: return null;
         }
     };
@@ -516,6 +558,14 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
                             <TableCell colSpan={4} className="text-right">GRAND TOTAL WARGA</TableCell>
                             <TableCell className="text-left">{totalWarga} Warga</TableCell>
+                        </TableRow>
+                    </TableFooter>
+                )}
+                {type === 'keluarga' && totalAnggota > 0 && (
+                    <TableFooter>
+                        <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
+                            <TableCell colSpan={4} className="text-right">GRAND TOTAL ANGGOTA</TableCell>
+                            <TableCell className="text-left">{totalAnggota} Anggota</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
