@@ -28,7 +28,7 @@ minInstances: 1
 # Specifies the environment variables available to your backend.
 # These are accessible using process.env.
 env:
-  - variable: GOOGLE_SHEET_ID
+  - variable: SPREADSHEET_ID
     secret: GOOGLE_SHEET_ID_SECRET
   - variable: GOOGLE_SERVICE_ACCOUNT_EMAIL
     secret: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
