@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type { Pengurus } from '@/lib/types';
 import { useToast } from "@/hooks/use-toast";
@@ -26,23 +26,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { toast } = useToast();
 
-  useEffect(() => {
+  const checkAuth = useCallback(() => {
     try {
       const storedUser = localStorage.getItem('rt-user');
       if (storedUser) {
         const parsedUser: UserInContext = JSON.parse(storedUser);
         setUser(parsedUser);
+      } else {
+        setUser(null);
       }
     } catch (error) {
         console.error("Could not parse user from localStorage", error);
         localStorage.removeItem('rt-user');
+        setUser(null);
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!loading && !user && !pathname.startsWith('/login')) {
-      router.replace('/login');
+    checkAuth();
+  }, [checkAuth]);
+  
+  useEffect(() => {
+    // This effect handles redirection logic.
+    if (!loading) {
+      if (user && pathname.startsWith('/login')) {
+         router.replace('/dashboard');
+      } else if (!user && !pathname.startsWith('/login')) {
+         router.replace('/login');
+      }
     }
   }, [user, loading, pathname, router]);
 
@@ -75,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error("Could not remove user from localStorage", error);
       }
-    router.push('/login');
+    router.replace('/login');
   };
 
   const isAuthenticated = !!user;

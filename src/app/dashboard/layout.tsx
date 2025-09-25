@@ -19,13 +19,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading || !isAuthenticated) {
     return (
-       <div className="flex h-screen w-screen items-center justify-center p-4">
-        <div className="flex w-full h-full gap-4">
-            <Skeleton className="hidden md:block md:w-64 rounded-lg" />
-            <div className="flex-1 space-y-4">
-                 <Skeleton className="h-16 w-full rounded-lg" />
-                 <Skeleton className="h-[calc(100vh-8rem)] w-full rounded-lg" />
-            </div>
+       <div className="flex h-screen w-full items-stretch">
+        <Skeleton className="hidden md:block md:w-64" />
+        <div className="flex-1 flex flex-col">
+            <header className="flex h-16 items-center justify-end border-b px-4 sm:px-6 lg:px-8">
+              <Skeleton className="h-9 w-9 rounded-full" />
+            </header>
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
+               <Skeleton className="h-full w-full" />
+            </main>
         </div>
       </div>
     );
