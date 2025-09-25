@@ -27,7 +27,6 @@ const bulanOptions = [
 const tahunOptions = Array.from({ length: 5 }, (_, i) => String(new Date().getFullYear() - i));
 
 export default function LaporanPage() {
-    const { user } = useAuth();
     // Default to the current month (1-indexed) and current year
     const [bulan, setBulan] = useState(String(new Date().getMonth() + 1));
     const [tahun, setTahun] = useState(String(new Date().getFullYear()));
@@ -38,19 +37,6 @@ export default function LaporanPage() {
         // It uses the browser's print dialog
         window.print();
     };
-
-    if (user?.peran !== 'Admin' && user?.peran !== 'Pengawas') {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Akses Ditolak</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin dan Pengawas yang dapat melihat laporan.</p>
-                </CardContent>
-            </Card>
-        );
-    }
     
     return (
         <div className="space-y-6">
