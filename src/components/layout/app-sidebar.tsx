@@ -18,6 +18,7 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/laporan', label: 'Laporan', icon: FileText },
   { href: '/dashboard/warga', label: 'Warga', icon: Users, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/anggota-keluarga', label: 'Anggota Keluarga', icon: UserSquare2, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/iuran', label: 'Iuran', icon: DollarSign, roles: ['Admin', 'Pengawas'] },
@@ -25,7 +26,6 @@ const navItems = [
   { href: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: Wallet, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/inventaris', label: 'Inventaris', icon: Warehouse },
   { href: '/dashboard/pengumuman', label: 'Pengumuman', icon: Megaphone },
-  { href: '/dashboard/laporan', label: 'Laporan', icon: FileText },
   { href: '/dashboard/umkm', label: 'UMKM', icon: Store },
   { href: '/dashboard/arisan', label: 'Arisan', icon: Dice5 },
   { href: '/dashboard/pengurus', label: 'Pengurus RT', icon: UserCog, roles: ['Admin', 'Pengawas'] },

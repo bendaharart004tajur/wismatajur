@@ -58,8 +58,8 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
     const [error, setError] = useState<string | null>(null);
 
     const fetchData = useCallback(async () => {
-        if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
-            setError('Akses ditolak.');
+        if (!user) {
+            setError('Anda harus login untuk melihat laporan.');
             setIsLoading(false);
             return;
         }
@@ -68,18 +68,25 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         setError(null);
         try {
             let fetchedData: LaporanData = [];
+            // For reports, we always fetch data as if we're an Admin on the backend
+            // Then, we filter it on the client-side based on the actual user's role
             switch (type) {
                 case 'iuran':
-                    fetchedData = await getIuranAction(user.peran, user.wargaId);
+                    fetchedData = await getIuranAction('Admin', '');
                     break;
                 case 'pengeluaran':
-                    fetchedData = await getPengeluaranAction(user.peran);
+                    if (user.peran !== 'Admin' && user.peran !== 'Pengawas') {
+                        setError('Hanya Admin dan Pengawas yang dapat melihat laporan pengeluaran.');
+                        fetchedData = [];
+                    } else {
+                        fetchedData = await getPengeluaranAction('Admin');
+                    }
                     break;
                 case 'warga':
-                    fetchedData = await getWargaAction(user.peran, user.wargaId);
+                    fetchedData = await getWargaAction('Admin', '');
                     break;
                 case 'keluarga':
-                    fetchedData = await getAnggotaKeluargaAction(user.peran, user.wargaId);
+                    fetchedData = await getAnggotaKeluargaAction('Admin', '');
                     break;
             }
             setData(fetchedData);
@@ -95,14 +102,53 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         fetchData();
     }, [fetchData]);
 
+    const roleFilteredData = useMemo(() => {
+        if (!user) return [];
+        if (user.peran === 'Admin' || user.peran === 'Pengawas') return data;
+        
+        switch (type) {
+            case 'iuran':
+                if (user.peran === 'Koordinator') {
+                    return (data as Iuran[]).filter(item => item.blok === user.blok);
+                }
+                if (user.peran === 'User') {
+                    return (data as Iuran[]).filter(item => item.wargaId === user.wargaId);
+                }
+                break;
+            case 'warga':
+                 if (user.peran === 'Koordinator') {
+                    return (data as Warga[]).filter(item => item.blok === user.blok);
+                }
+                if (user.peran === 'User') {
+                    return (data as Warga[]).filter(item => item.wargaId === user.wargaId);
+                }
+                break;
+            case 'keluarga':
+                 if (user.peran === 'Koordinator') {
+                    const wargaInBlok = (data as AnggotaKeluargaWithInfo[]).filter(item => item.alamat?.includes(`Blok ${user.blok}`));
+                    return wargaInBlok;
+                }
+                if (user.peran === 'User') {
+                     return (data as AnggotaKeluargaWithInfo[]).filter(item => item.wargaId === user.wargaId);
+                }
+                break;
+            case 'pengeluaran':
+                // Already handled in fetchData
+                return data;
+        }
+        return data;
+
+    }, [data, user, type]);
+
+
     const filteredData = useMemo(() => {
         const intBulan = parseInt(bulan, 10);
         const intTahun = parseInt(tahun, 10);
 
-        if (isNaN(intTahun)) return data;
+        if (isNaN(intTahun)) return roleFilteredData;
 
         // Filter by year first for all types that have date
-        let yearFilteredData = data;
+        let yearFilteredData = roleFilteredData;
         const dateFieldMap: {[key in LaporanType]?: string} = {
             'iuran': 'tahun',
             'pengeluaran': 'tanggal',
@@ -110,7 +156,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         const dateField = dateFieldMap[type];
 
         if (dateField) {
-            yearFilteredData = (data as any[]).filter(item => {
+            yearFilteredData = (roleFilteredData as any[]).filter(item => {
                 if (dateField === 'tahun') {
                     return item.tahun === intTahun;
                 }
@@ -140,7 +186,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         
         // Warga dan Anggota Keluarga are not filtered by date
         return yearFilteredData;
-    }, [data, bulan, tahun, type]);
+    }, [roleFilteredData, bulan, tahun, type]);
     
     
    const { groupedIuran, grandTotalIuran } = useMemo(() => {
@@ -568,7 +614,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                  {type === 'warga' && totalWarga > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">GRAND TOTAL</TableCell>
+                            <TableCell colSpan={4} className="text-right">TOTAL SEMUA BLOK</TableCell>
                             <TableCell className="text-left font-bold">{totalWarga} Warga</TableCell>
                         </TableRow>
                     </TableFooter>
@@ -576,7 +622,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 {type === 'keluarga' && totalAnggota > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">GRAND TOTAL</TableCell>
+                            <TableCell colSpan={4} className="text-right">TOTAL SEMUA BLOK</TableCell>
                             <TableCell className="text-left font-bold">{totalAnggota} Anggota</TableCell>
                         </TableRow>
                     </TableFooter>
