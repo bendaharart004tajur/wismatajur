@@ -182,10 +182,10 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             if (a.blok && b.blok && a.blok !== b.blok) {
                 return a.blok.localeCompare(b.blok);
             }
-             // Nama descending
+            // Nama descending
             const nameB = b.nama || '';
             const nameA = a.nama || '';
-            const nameCompare = nameB.localeCompare(nameA);
+            const nameCompare = nameA.localeCompare(nameB);
             if (nameCompare !== 0) {
                 return nameCompare;
             }
@@ -261,7 +261,9 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         const grouped: { [key: string]: { items: Pengeluaran[], subtotal: number } } = {};
         let grandTotal = 0;
 
-        for (const item of filteredData as Pengeluaran[]) {
+        const sortedData = (filteredData as Pengeluaran[]).sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime());
+
+        for (const item of sortedData) {
             const monthKey = new Date(item.tanggal).toLocaleString('id-ID', { month: 'long', year: 'numeric' });
             if (!grouped[monthKey]) {
                 grouped[monthKey] = { items: [], subtotal: 0 };
@@ -292,9 +294,9 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         return { groupedPengeluaran: sortedGrouped, grandTotalPengeluaran: grandTotal };
     }, [filteredData, type]);
     
-    const groupedWarga = useMemo(() => {
+    const { groupedWarga, totalWarga } = useMemo(() => {
         if (type !== 'warga' || !filteredData) {
-            return {};
+            return { groupedWarga: {}, totalWarga: 0 };
         }
 
         const sortedData = (filteredData as Warga[]).sort((a, b) => {
@@ -303,11 +305,14 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 return blokCompare;
             }
             
+            // Try parsing norumah as numbers for smarter sorting
             const norumahA = parseInt(a.norumah, 10);
             const norumahB = parseInt(b.norumah, 10);
             if (!isNaN(norumahA) && !isNaN(norumahB)) {
                 return norumahA - norumahB;
             }
+
+            // Fallback to string comparison if not a number
             return a.norumah.localeCompare(b.norumah);
         });
 
@@ -321,7 +326,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             grouped[blokKey].push(item);
         }
 
-        return grouped;
+        return { groupedWarga: grouped, totalWarga: sortedData.length };
 
     }, [filteredData, type]);
 
@@ -501,6 +506,20 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                             <TableCell colSpan={3} className="text-right">GRAND TOTAL</TableCell>
                             <TableCell className="text-right">{formatRupiah(grandTotalPengeluaran)}</TableCell>
                             <TableCell></TableCell>
+                        </TableRow>
+                    </TableFooter>
+                )}
+                 {type === 'warga' && totalWarga > 0 && (
+                    <TableFooter>
+                        {Object.entries(groupedWarga).map(([blok, wargaList]) => (
+                            <TableRow key={`footer-${blok}`} className="bg-muted/50 font-medium">
+                                <TableCell colSpan={4} className="text-right">Total Warga Blok {blok}</TableCell>
+                                <TableCell className="text-left font-bold">{(wargaList as Warga[]).length} Warga</TableCell>
+                            </TableRow>
+                        ))}
+                        <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
+                            <TableCell colSpan={4} className="text-right">GRAND TOTAL WARGA</TableCell>
+                            <TableCell className="text-left">{totalWarga} Warga</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
