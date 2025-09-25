@@ -154,8 +154,23 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         let grandTotalSosial = 0;
         let grandTotalMasjid = 0;
         let grandTotal = 0;
+        
+        const bulanNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
-        for (const item of filteredData as Iuran[]) {
+        const sortedData = (filteredData as Iuran[]).sort((a, b) => {
+            // Sort by nama descending
+            const nameComparison = b.nama.localeCompare(a.nama);
+            if (nameComparison !== 0) {
+                return nameComparison;
+            }
+            // If names are equal, sort by bulan descending
+            const monthAIndex = bulanNames.indexOf(a.bulan);
+            const monthBIndex = bulanNames.indexOf(b.bulan);
+            return monthBIndex - monthAIndex;
+        });
+
+
+        for (const item of sortedData) {
             const blok = item.blok || 'Lainnya';
             if (!grouped[blok]) {
                 grouped[blok] = { items: [], subtotalLingkungan: 0, subtotalSosial: 0, subtotalMasjid: 0, subtotalTotal: 0 };
