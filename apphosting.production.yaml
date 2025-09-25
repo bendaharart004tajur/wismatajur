@@ -1,0 +1,30 @@
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+
+# The build block specifies settings for the build process.
+build:
+  # This env block makes secrets available as environment variables during the build.
+  env:
+    - variable: GOOGLE_SHEET_ID
+      secret: GOOGLE_SHEET_ID_SECRET
+    - variable: GOOGLE_SERVICE_ACCOUNT_EMAIL
+      secret: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
+    - variable: GOOGLE_PRIVATE_KEY
+      secret: GOOGLE_PRIVATE_KEY_SECRET
+
+# runConfig settings are applied to the production environment (runtime).
+runConfig:
+  # This env block makes the same secrets available during runtime.
+  env:
+    - variable: GOOGLE_SHEET_ID
+      secret: GOOGLE_SHEET_ID_SECRET
+    - variable: GOOGLE_SERVICE_ACCOUNT_EMAIL
+      secret: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
+    - variable: GOOGLE_PRIVATE_KEY
+      secret: GOOGLE_PRIVATE_KEY_SECRET
+
+# The secrets block lists all secrets required by this backend.
+secrets:
+  - GOOGLE_SHEET_ID_SECRET
+  - GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
+  - GOOGLE_PRIVATE_KEY_SECRET

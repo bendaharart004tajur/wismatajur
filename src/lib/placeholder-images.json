@@ -1,0 +1,58 @@
+{
+  "placeholderImages": [
+    {
+      "id": "profile-1",
+      "description": "Profile photo for a male resident",
+      "imageUrl": "https://picsum.photos/seed/profile1/200/200",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "profile-2",
+      "description": "Profile photo for a female resident",
+      "imageUrl": "https://picsum.photos/seed/profile2/200/200",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "profile-3",
+      "description": "Profile photo for another male resident",
+      "imageUrl": "https://picsum.photos/seed/profile3/200/200",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "profile-4",
+      "description": "Profile photo for a female admin",
+      "imageUrl": "https://picsum.photos/seed/profile4/200/200",
+      "imageHint": "professional woman"
+    },
+    {
+      "id": "ktp-1",
+      "description": "KTP scan for a resident",
+      "imageUrl": "https://picsum.photos/seed/ktp1/400/250",
+      "imageHint": "id card"
+    },
+    {
+      "id": "ktp-2",
+      "description": "KTP scan for another resident",
+      "imageUrl": "https://picsum.photos/seed/ktp2/400/250",
+      "imageHint": "document"
+    },
+    {
+      "id": "kk-1",
+      "description": "Kartu Keluarga scan",
+      "imageUrl": "https://picsum.photos/seed/kk1/400/550",
+      "imageHint": "document form"
+    },
+    {
+      "id": "bukti-bayar-1",
+      "description": "Proof of payment for iuran",
+      "imageUrl": "https://picsum.photos/seed/payment1/300/400",
+      "imageHint": "receipt"
+    },
+    {
+      "id": "bukti-bayar-2",
+      "description": "Proof of payment for an expense",
+      "imageUrl": "https://picsum.photos/seed/payment2/300/400",
+      "imageHint": "invoice"
+    }
+  ]
+}

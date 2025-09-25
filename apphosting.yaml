@@ -1,0 +1,15 @@
+# Settings to manage and configure a Firebase App Hosting backend.
+# https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  # Increase this value if you'd like to automatically spin up
+  # more instances in response to increased traffic.
+  maxInstances: 1
+environmentVariables:
+  GOOGLE_SHEET_ID: ${GOOGLE_SHEET_ID_SECRET}
+  GOOGLE_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET}
+  GOOGLE_PRIVATE_KEY: ${GOOGLE_PRIVATE_KEY_SECRET}
+secrets:
+- name: GOOGLE_SHEET_ID_SECRET
+- name: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
+- name: GOOGLE_PRIVATE_KEY_SECRET
