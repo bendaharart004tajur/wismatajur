@@ -65,11 +65,12 @@ export default function DashboardPage() {
             setLoading(true);
             try {
                 // Fetch all data required for all roles first
-                const [allWargaForAdmin, allIuran, pengumuman, allAnggota] = await Promise.all([
+                const [allWargaForAdmin, allIuran, pengumuman, allAnggota, allPengeluaranForAdmin] = await Promise.all([
                     getWargaAction('Admin', ''), // Fetch all warga for demographic and other stats
                     getIuranAction(user.peran, user.wargaId, user.blok),
                     getPengumumanAction(),
-                    getAnggotaKeluargaAction('Admin', '') // Fetch all members for demographics
+                    getAnggotaKeluargaAction('Admin', ''), // Fetch all members for demographics
+                    getPengeluaranAction('Admin'), // Fetch all expenses for all roles
                 ]);
                 
                 let wargaData: Warga[];
@@ -84,19 +85,16 @@ export default function DashboardPage() {
 
 
                 // Admin-specific financial data
-                let allPengeluaran: Pengeluaran[] = [];
                 let allPendapatan: Pendapatan[] = [];
                 if (user.peran === 'Admin') {
                    try {
-                     const [pengeluaran, pendapatan] = await Promise.all([
-                        getPengeluaranAction(user.peran),
+                     const [pendapatan] = await Promise.all([
                         getPendapatanAction(user.peran),
                      ]);
-                     allPengeluaran = pengeluaran;
                      allPendapatan = pendapatan;
 
                    } catch (e) {
-                    console.error("Gagal mengambil data keuangan:", e);
+                    console.error("Gagal mengambil data pendapatan:", e);
                    }
                 }
                 
@@ -195,6 +193,19 @@ export default function DashboardPage() {
                     totalSosial: iuranLunasPeriodeIni.reduce((sum, i) => sum + i.iuranSosial, 0),
                     totalMasjid: iuranLunasPeriodeIni.reduce((sum, i) => sum + i.iuranMasjid, 0),
                 });
+                
+                // Pengeluaran bulan ini (for all roles)
+                const pengeluaranBulanIni = allPengeluaranForAdmin.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear());
+                const totalPengeluaranBulanIni = pengeluaranBulanIni.reduce((acc, p) => acc + p.jumlah, 0);
+                const byKategori = pengeluaranBulanIni.reduce((acc, p) => {
+                    acc[p.kategori] = (acc[p.kategori] || 0) + p.jumlah;
+                    return acc;
+                }, {} as {[key: string]: number});
+
+                setPengeluaranStats({
+                    totalPengeluaran: totalPengeluaranBulanIni,
+                    byKategori,
+                });
 
                 // Calculate total saldo (Admin only)
                 if (user.peran === 'Admin') {
@@ -207,7 +218,7 @@ export default function DashboardPage() {
 
                     const totalPemasukan = totalPemasukanIuran + totalPemasukanPendapatan;
                     
-                    const totalPengeluaranKas = allPengeluaran
+                    const totalPengeluaranKas = allPengeluaranForAdmin
                         .reduce((sum, p) => sum + p.jumlah, 0);
                     
                     const totalSaldo = totalPemasukan - totalPengeluaranKas;
@@ -217,20 +228,6 @@ export default function DashboardPage() {
                         totalPemasukan,
                         totalPengeluaranKas
                     });
-
-                    // Pengeluaran bulan ini
-                    const pengeluaranBulanIni = allPengeluaran.filter(p => new Date(p.tanggal).getMonth() === now.getMonth() && new Date(p.tanggal).getFullYear() === now.getFullYear());
-                    const totalPengeluaranBulanIni = pengeluaranBulanIni.reduce((acc, p) => acc + p.jumlah, 0);
-                    const byKategori = pengeluaranBulanIni.reduce((acc, p) => {
-                        acc[p.kategori] = (acc[p.kategori] || 0) + p.jumlah;
-                        return acc;
-                    }, {} as {[key: string]: number});
-
-                    setPengeluaranStats({
-                        totalPengeluaran: totalPengeluaranBulanIni,
-                        byKategori,
-                    });
-
 
                     // Prepare data for monthly finance chart
                     const summary: { [key: string]: { pemasukan: number; pengeluaran: number } } = {};
@@ -261,7 +258,7 @@ export default function DashboardPage() {
                         }
                     });
 
-                    allPengeluaran.forEach(p => {
+                    allPengeluaranForAdmin.forEach(p => {
                         const d = new Date(p.tanggal);
                         const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
                         if (summary[monthKey]) {
@@ -331,12 +328,7 @@ export default function DashboardPage() {
                         />
                         <WargaStatsCard stats={wargaStats} loading={loading} />
                         <MonthlyIuranCard stats={iuranStats} loading={loading} />
-                         <StatsCard 
-                            title="Pengeluaran"
-                            value={"Hanya Admin"}
-                            description={"Total pengeluaran hanya bisa dilihat Admin"}
-                            icon={TrendingDown}
-                        />
+                        <MonthlyPengeluaranCard stats={pengeluaranStats} loading={loading} />
                     </>
                 )}
             </div>

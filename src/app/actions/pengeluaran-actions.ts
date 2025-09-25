@@ -16,11 +16,7 @@ interface PengeluaranInput extends Omit<Pengeluaran, 'id' | 'dicatatOleh' | 'tan
 
 // Action to get all expenses, restricted to Admins
 export async function getPengeluaranAction(peran: Peran): Promise<Pengeluaran[]> {
-  if (peran !== 'Admin') {
-     // Return empty array for non-admins instead of throwing error
-    // to prevent crashes on dashboard when user is not admin
-    return [];
-  }
+  // Allow all roles to view, but only admin can edit/delete through UI
   try {
     const data = await getPengeluaranDataFromSheet();
     // Sort by date, newest first
