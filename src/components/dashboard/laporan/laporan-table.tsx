@@ -143,12 +143,28 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
     }, [data, bulan, tahun, type]);
     
     
-    const { groupedIuran, grandTotalIuran } = useMemo(() => {
+   const { groupedIuran, grandTotalIuran } = useMemo(() => {
         if (type !== 'iuran' || !filteredData) {
             return { groupedIuran: {}, grandTotalIuran: { lingkungan: 0, sosial: 0, masjid: 0, total: 0 } };
         }
 
-        const grouped: { [key: string]: { items: Iuran[], subtotalLingkungan: number, subtotalSosial: number, subtotalMasjid: number, subtotalTotal: number } } = {};
+        const grouped: { 
+            [monthKey: string]: { 
+                blok: { 
+                    [blokKey: string]: { 
+                        items: Iuran[],
+                        subtotalLingkungan: number, 
+                        subtotalSosial: number, 
+                        subtotalMasjid: number, 
+                        subtotalTotal: number 
+                    } 
+                },
+                monthSubtotalLingkungan: number,
+                monthSubtotalSosial: number,
+                monthSubtotalMasjid: number,
+                monthSubtotalTotal: number,
+            } 
+        } = {};
         
         let grandTotalLingkungan = 0;
         let grandTotalSosial = 0;
@@ -158,28 +174,42 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         const bulanNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
         const sortedData = (filteredData as Iuran[]).sort((a, b) => {
-            // Sort by nama descending
-            const nameComparison = b.nama.localeCompare(a.nama);
-            if (nameComparison !== 0) {
-                return nameComparison;
+            const dateA = new Date(a.tahun, bulanNames.indexOf(a.bulan));
+            const dateB = new Date(b.tahun, bulanNames.indexOf(b.bulan));
+            if (dateB.getTime() !== dateA.getTime()) {
+                return dateB.getTime() - dateA.getTime();
             }
-            // If names are equal, sort by bulan descending
-            const monthAIndex = bulanNames.indexOf(a.bulan);
-            const monthBIndex = bulanNames.indexOf(b.bulan);
-            return monthBIndex - monthAIndex;
+            if (a.blok && b.blok && a.blok !== b.blok) {
+                return a.blok.localeCompare(b.blok);
+            }
+            return a.nama.localeCompare(b.nama);
         });
 
-
         for (const item of sortedData) {
-            const blok = item.blok || 'Lainnya';
-            if (!grouped[blok]) {
-                grouped[blok] = { items: [], subtotalLingkungan: 0, subtotalSosial: 0, subtotalMasjid: 0, subtotalTotal: 0 };
+            const monthKey = `${item.bulan} ${item.tahun}`;
+            const blokKey = item.blok || 'Lainnya';
+
+            // Initialize month group
+            if (!grouped[monthKey]) {
+                grouped[monthKey] = { blok: {}, monthSubtotalLingkungan: 0, monthSubtotalSosial: 0, monthSubtotalMasjid: 0, monthSubtotalTotal: 0 };
             }
-            grouped[blok].items.push(item);
-            grouped[blok].subtotalLingkungan += item.iuranLingkungan || 0;
-            grouped[blok].subtotalSosial += item.iuranSosial || 0;
-            grouped[blok].subtotalMasjid += item.iuranMasjid || 0;
-            grouped[blok].subtotalTotal += item.totalIuran || 0;
+
+            // Initialize blok sub-group
+            if (!grouped[monthKey].blok[blokKey]) {
+                grouped[monthKey].blok[blokKey] = { items: [], subtotalLingkungan: 0, subtotalSosial: 0, subtotalMasjid: 0, subtotalTotal: 0 };
+            }
+
+            // Add item and update subtotals
+            grouped[monthKey].blok[blokKey].items.push(item);
+            grouped[monthKey].blok[blokKey].subtotalLingkungan += item.iuranLingkungan || 0;
+            grouped[monthKey].blok[blokKey].subtotalSosial += item.iuranSosial || 0;
+            grouped[monthKey].blok[blokKey].subtotalMasjid += item.iuranMasjid || 0;
+            grouped[monthKey].blok[blokKey].subtotalTotal += item.totalIuran || 0;
+            
+            grouped[monthKey].monthSubtotalLingkungan += item.iuranLingkungan || 0;
+            grouped[monthKey].monthSubtotalSosial += item.iuranSosial || 0;
+            grouped[monthKey].monthSubtotalMasjid += item.iuranMasjid || 0;
+            grouped[monthKey].monthSubtotalTotal += item.totalIuran || 0;
 
             grandTotalLingkungan += item.iuranLingkungan || 0;
             grandTotalSosial += item.iuranSosial || 0;
@@ -187,18 +217,12 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             grandTotal += item.totalIuran || 0;
         }
 
-        const sortedBloks = Object.keys(grouped).sort();
-        const sortedGrouped: typeof grouped = {};
-        for(const blok of sortedBloks) {
-            sortedGrouped[blok] = grouped[blok];
-        }
-
         return {
-            groupedIuran: sortedGrouped,
+            groupedIuran: grouped,
             grandTotalIuran: { lingkungan: grandTotalLingkungan, sosial: grandTotalSosial, masjid: grandTotalMasjid, total: grandTotal }
         };
-
     }, [filteredData, type]);
+
 
     const { groupedPengeluaran, grandTotalPengeluaran } = useMemo(() => {
         if (type !== 'pengeluaran' || !filteredData) {
@@ -278,30 +302,48 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         }
 
         switch (type) {
-            case 'iuran':
-                return Object.entries(groupedIuran).map(([blok, group]) => (
-                    <React.Fragment key={blok}>
-                        <TableRow className="bg-muted/50 hover:bg-muted/50">
-                            <TableCell colSpan={8} className="font-bold">Blok {blok}</TableCell>
+             case 'iuran':
+                return Object.entries(groupedIuran).map(([monthKey, monthGroup]) => (
+                    <React.Fragment key={monthKey}>
+                        <TableRow className="bg-secondary hover:bg-secondary">
+                            <TableCell colSpan={8} className="font-extrabold text-lg text-secondary-foreground">{monthKey}</TableCell>
                         </TableRow>
-                        {group.items.map(item => (
-                            <TableRow key={item.iuranId}>
-                                <TableCell>{item.nama}</TableCell>
-                                <TableCell>{item.bulan} {item.tahun}</TableCell>
-                                <TableCell>{item.blok}</TableCell>
-                                <TableCell className="text-right">{formatRupiah(item.iuranLingkungan)}</TableCell>
-                                <TableCell className="text-right">{formatRupiah(item.iuranSosial)}</TableCell>
-                                <TableCell className="text-right">{formatRupiah(item.iuranMasjid)}</TableCell>
-                                <TableCell className="text-right font-semibold">{formatRupiah(item.totalIuran)}</TableCell>
-                                <TableCell>{item.status}</TableCell>
-                            </TableRow>
-                        ))}
-                        <TableRow className="bg-muted/50 hover:bg-muted/50 font-bold">
-                            <TableCell colSpan={3} className="text-right">Subtotal Blok {blok}</TableCell>
-                            <TableCell className="text-right">{formatRupiah(group.subtotalLingkungan)}</TableCell>
-                            <TableCell className="text-right">{formatRupiah(group.subtotalSosial)}</TableCell>
-                            <TableCell className="text-right">{formatRupiah(group.subtotalMasjid)}</TableCell>
-                            <TableCell className="text-right">{formatRupiah(group.subtotalTotal)}</TableCell>
+                        {Object.keys(monthGroup.blok).sort().map(blokKey => {
+                            const blokGroup = monthGroup.blok[blokKey];
+                            return (
+                                <React.Fragment key={blokKey}>
+                                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                        <TableCell colSpan={8} className="font-bold pl-8">Blok {blokKey}</TableCell>
+                                    </TableRow>
+                                    {blokGroup.items.map(item => (
+                                        <TableRow key={item.iuranId}>
+                                            <TableCell className="pl-8">{item.nama}</TableCell>
+                                            <TableCell>{item.bulan} {item.tahun}</TableCell>
+                                            <TableCell>{item.blok}</TableCell>
+                                            <TableCell className="text-right">{formatRupiah(item.iuranLingkungan)}</TableCell>
+                                            <TableCell className="text-right">{formatRupiah(item.iuranSosial)}</TableCell>
+                                            <TableCell className="text-right">{formatRupiah(item.iuranMasjid)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{formatRupiah(item.totalIuran)}</TableCell>
+                                            <TableCell>{item.status}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    <TableRow className="bg-muted/50 hover:bg-muted/50 font-bold">
+                                        <TableCell colSpan={3} className="text-right">Subtotal Blok {blokKey}</TableCell>
+                                        <TableCell className="text-right">{formatRupiah(blokGroup.subtotalLingkungan)}</TableCell>
+                                        <TableCell className="text-right">{formatRupiah(blokGroup.subtotalSosial)}</TableCell>
+                                        <TableCell className="text-right">{formatRupiah(blokGroup.subtotalMasjid)}</TableCell>
+                                        <TableCell className="text-right">{formatRupiah(blokGroup.subtotalTotal)}</TableCell>
+                                        <TableCell></TableCell>
+                                    </TableRow>
+                                </React.Fragment>
+                            )
+                        })}
+                         <TableRow className="bg-secondary/70 hover:bg-secondary/70 font-bold text-base">
+                            <TableCell colSpan={3} className="text-right">Total {monthKey}</TableCell>
+                            <TableCell className="text-right">{formatRupiah(monthGroup.monthSubtotalLingkungan)}</TableCell>
+                            <TableCell className="text-right">{formatRupiah(monthGroup.monthSubtotalSosial)}</TableCell>
+                            <TableCell className="text-right">{formatRupiah(monthGroup.monthSubtotalMasjid)}</TableCell>
+                            <TableCell className="text-right">{formatRupiah(monthGroup.monthSubtotalTotal)}</TableCell>
                             <TableCell></TableCell>
                         </TableRow>
                     </React.Fragment>
