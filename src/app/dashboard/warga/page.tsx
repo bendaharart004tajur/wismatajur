@@ -14,6 +14,7 @@ import { AddWargaDialog } from '@/components/dashboard/warga/add-warga-dialog';
 
 import { columns } from '@/components/dashboard/warga/columns';
 import { DataTable } from '@/components/dashboard/warga/data-table';
+import { WargaSummary } from '@/components/dashboard/warga/warga-summary';
 
 
 export default function WargaPage() {
@@ -69,6 +70,8 @@ export default function WargaPage() {
           </AddWargaDialog>
         )}
       </div>
+
+      {!loading && data.length > 0 && <WargaSummary data={data} />}
 
        <Card>
         <CardContent className="p-0">
