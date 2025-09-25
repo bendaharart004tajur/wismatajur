@@ -10,8 +10,10 @@ import {
   getWargaDataFromSheet,
 } from '@/lib/google-sheets';
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
+import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
 
-export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string) {
+
+export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string): Promise<AnggotaKeluargaWithInfo[]> {
   try {
     if (peran === 'Admin' || peran === 'Pengawas') {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
