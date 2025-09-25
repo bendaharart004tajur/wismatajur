@@ -1,5 +1,6 @@
-# Firebase Studio
 
-This is a NextJS starter in Firebase Studio.
+# wismatajur
 
-To get started, take a look at src/app/page.tsx.
+Sebuah aplikasi untuk mengelola data warga, iuran, dan keuangan RT. Dibuat dengan Next.js, TypeScript, dan Firebase.
+
+<!-- Triggering new deploy to fetch secrets -->
