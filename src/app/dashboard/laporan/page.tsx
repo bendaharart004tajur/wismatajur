@@ -28,7 +28,8 @@ const tahunOptions = Array.from({ length: 5 }, (_, i) => String(new Date().getFu
 
 export default function LaporanPage() {
     const { user } = useAuth();
-    const [bulan, setBulan] = useState('all');
+    // Default to the current month (1-indexed) and current year
+    const [bulan, setBulan] = useState(String(new Date().getMonth() + 1));
     const [tahun, setTahun] = useState(String(new Date().getFullYear()));
     const [activeTab, setActiveTab] = useState('iuran');
 
