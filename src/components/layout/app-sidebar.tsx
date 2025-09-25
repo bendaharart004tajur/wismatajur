@@ -18,9 +18,9 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/warga', label: 'Warga', icon: Users },
-  { href: '/dashboard/anggota-keluarga', label: 'Anggota Keluarga', icon: UserSquare2 },
-  { href: '/dashboard/iuran', label: 'Iuran', icon: DollarSign },
+  { href: '/dashboard/warga', label: 'Warga', icon: Users, roles: ['Admin', 'Pengawas'] },
+  { href: '/dashboard/anggota-keluarga', label: 'Anggota Keluarga', icon: UserSquare2, roles: ['Admin', 'Pengawas'] },
+  { href: '/dashboard/iuran', label: 'Iuran', icon: DollarSign, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/pendapatan', label: 'Pendapatan', icon: TrendingUp, roles: ['Admin', 'Pengawas'] },
   { href: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: Wallet },
   { href: '/dashboard/inventaris', label: 'Inventaris', icon: Warehouse },
