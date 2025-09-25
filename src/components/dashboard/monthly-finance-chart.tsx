@@ -81,22 +81,19 @@ export default function MonthlyFinanceChart({ data }: MonthlyFinanceChartProps) 
                     cursor={false}
                     content={<ChartTooltipContent
                         labelFormatter={(label, payload) => {
-                            return payload?.[0]?.payload.month;
+                            // Find the full month name from the original data
+                            const entry = data.find(d => d.month.startsWith(label));
+                            return entry ? entry.month : label;
                         }}
-                        formatter={(value, name) => {
-                            const key = name as keyof typeof chartConfig;
-                            if (!chartConfig[key]) return null;
-
-                            return (
-                                <div className="flex items-center gap-2">
-                                    <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: chartConfig[key].color }}></div>
-                                    <div className="flex flex-1 justify-between">
-                                        <span className="text-muted-foreground">{chartConfig[key].label}</span>
-                                        <span className="font-bold font-mono">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value as number)}</span>
-                                    </div>
+                        formatter={(value, name) => (
+                            <div className="flex items-center gap-2">
+                                <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: chartConfig[name as keyof typeof chartConfig]?.color }}></div>
+                                <div className="flex flex-1 justify-between">
+                                    <span className="text-muted-foreground">{chartConfig[name as keyof typeof chartConfig]?.label}</span>
+                                    <span className="font-bold font-mono">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value as number)}</span>
                                 </div>
-                            )
-                        }}
+                            </div>
+                        )}
                     />}
                 />
                 <Legend />
