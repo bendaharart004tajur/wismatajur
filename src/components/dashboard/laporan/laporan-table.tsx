@@ -335,18 +335,30 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             return { groupedKeluarga: {}, totalAnggota: 0 };
         }
 
+        const getBlokFromAlamat = (alamat: string | undefined): string => {
+            if (!alamat) return 'Lainnya';
+            const match = alamat.match(/Blok\s([A-Z0-9]+)/);
+            return match ? match[1] : 'Lainnya';
+        };
+
         const sortedData = (filteredData as AnggotaKeluargaWithInfo[]).sort((a, b) => {
-            return (a.kepalaKeluarga || '').localeCompare(b.kepalaKeluarga || '');
+            const blokA = getBlokFromAlamat(a.alamat);
+            const blokB = getBlokFromAlamat(b.alamat);
+            const blokCompare = blokA.localeCompare(blokB);
+            if (blokCompare !== 0) {
+                return blokCompare;
+            }
+            return (a.nama || '').localeCompare(b.nama || '');
         });
 
-        const grouped: { [kepalaKeluargaKey: string]: AnggotaKeluargaWithInfo[] } = {};
+        const grouped: { [blokKey: string]: AnggotaKeluargaWithInfo[] } = {};
 
         for (const item of sortedData) {
-            const kepalaKeluargaKey = item.kepalaKeluarga || 'Tidak Diketahui';
-            if (!grouped[kepalaKeluargaKey]) {
-                grouped[kepalaKeluargaKey] = [];
+            const blokKey = getBlokFromAlamat(item.alamat);
+            if (!grouped[blokKey]) {
+                grouped[blokKey] = [];
             }
-            grouped[kepalaKeluargaKey].push(item);
+            grouped[blokKey].push(item);
         }
 
         return { groupedKeluarga: grouped, totalAnggota: sortedData.length };
@@ -379,7 +391,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             );
             case 'keluarga': return (
                 <TableRow>
-                    <TableHead>Alamat</TableHead>
+                    <TableHead>Kepala Keluarga</TableHead>
                     <TableHead>Nama Anggota</TableHead>
                     <TableHead>Hubungan</TableHead>
                     <TableHead>Jenis Kelamin</TableHead>
@@ -484,16 +496,16 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                     </React.Fragment>
                 ));
             case 'keluarga': 
-                return Object.entries(groupedKeluarga).map(([kepalaKeluarga, anggotaList]) => (
-                    <React.Fragment key={kepalaKeluarga}>
+                return Object.entries(groupedKeluarga).map(([blok, anggotaList]) => (
+                    <React.Fragment key={blok}>
                         <TableRow className="bg-muted/50 hover:bg-muted/50">
                             <TableCell colSpan={5} className="font-bold">
-                                Kepala Keluarga: {kepalaKeluarga} ({anggotaList.length} Anggota)
+                                Blok {blok} ({anggotaList.length} Anggota)
                             </TableCell>
                         </TableRow>
                         {(anggotaList as AnggotaKeluargaWithInfo[]).map(item => (
                              <TableRow key={item.anggotaId}>
-                                <TableCell className="pl-8">{item.alamat}</TableCell>
+                                <TableCell className="pl-8">{item.kepalaKeluarga}</TableCell>
                                 <TableCell>{item.nama}</TableCell>
                                 <TableCell>{item.hubungan}</TableCell>
                                 <TableCell>{item.jeniskelamin}</TableCell>
@@ -556,16 +568,16 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                  {type === 'warga' && totalWarga > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">GRAND TOTAL WARGA</TableCell>
-                            <TableCell className="text-left">{totalWarga} Warga</TableCell>
+                            <TableCell colSpan={4} className="text-right">GRAND TOTAL</TableCell>
+                            <TableCell className="text-left font-bold">{totalWarga} Warga</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
                 {type === 'keluarga' && totalAnggota > 0 && (
                     <TableFooter>
                         <TableRow className="bg-primary/20 hover:bg-primary/25 font-bold text-base">
-                            <TableCell colSpan={4} className="text-right">GRAND TOTAL ANGGOTA</TableCell>
-                            <TableCell className="text-left">{totalAnggota} Anggota</TableCell>
+                            <TableCell colSpan={4} className="text-right">GRAND TOTAL</TableCell>
+                            <TableCell className="text-left font-bold">{totalAnggota} Anggota</TableCell>
                         </TableRow>
                     </TableFooter>
                 )}
