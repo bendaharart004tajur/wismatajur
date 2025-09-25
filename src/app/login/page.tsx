@@ -45,7 +45,6 @@ export default function LoginPage() {
           <CardDescription>
             Masuk dengan email dan password Anda
           </CardDescription>
-           <p className="text-xs text-muted-foreground pt-2">v1.1 - Production Build</p>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="grid gap-4">
