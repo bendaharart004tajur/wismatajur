@@ -182,10 +182,23 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             if (a.blok && b.blok && a.blok !== b.blok) {
                 return a.blok.localeCompare(b.blok);
             }
-            return a.nama.localeCompare(b.nama);
+             // Nama descending
+            const nameB = b.nama || '';
+            const nameA = a.nama || '';
+            const nameCompare = nameB.localeCompare(nameA);
+            if (nameCompare !== 0) {
+                return nameCompare;
+            }
+
+            // Bulan descending
+            const monthB = bulanNames.indexOf(b.bulan);
+            const monthA = bulanNames.indexOf(a.bulan);
+            return monthB - monthA;
         });
 
         for (const item of sortedData) {
+            if (item.status !== 'Lunas') continue;
+            
             const monthKey = `${item.bulan} ${item.tahun}`;
             const blokKey = item.blok || 'Lainnya';
 
@@ -216,9 +229,25 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
             grandTotalMasjid += item.iuranMasjid || 0;
             grandTotal += item.totalIuran || 0;
         }
+        
+        const sortedMonthKeys = Object.keys(grouped).sort((a, b) => {
+             const monthNameA = a.split(' ')[0];
+            const yearA = parseInt(a.split(' ')[1]);
+            const monthNameB = b.split(' ')[0];
+            const yearB = parseInt(b.split(' ')[1]);
+            const dateA = new Date(yearA, bulanNames.indexOf(monthNameA));
+            const dateB = new Date(yearB, bulanNames.indexOf(monthNameB));
+            return dateB.getTime() - dateA.getTime();
+        });
+        
+        const sortedGroupedIuran: typeof grouped = {};
+        for (const key of sortedMonthKeys) {
+            sortedGroupedIuran[key] = grouped[key];
+        }
+
 
         return {
-            groupedIuran: grouped,
+            groupedIuran: sortedGroupedIuran,
             grandTotalIuran: { lingkungan: grandTotalLingkungan, sosial: grandTotalSosial, masjid: grandTotalMasjid, total: grandTotal }
         };
     }, [filteredData, type]);
@@ -262,6 +291,40 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
 
         return { groupedPengeluaran: sortedGrouped, grandTotalPengeluaran: grandTotal };
     }, [filteredData, type]);
+    
+    const groupedWarga = useMemo(() => {
+        if (type !== 'warga' || !filteredData) {
+            return {};
+        }
+
+        const sortedData = (filteredData as Warga[]).sort((a, b) => {
+            const blokCompare = (a.blok || '').localeCompare(b.blok || '');
+            if (blokCompare !== 0) {
+                return blokCompare;
+            }
+            
+            const norumahA = parseInt(a.norumah, 10);
+            const norumahB = parseInt(b.norumah, 10);
+            if (!isNaN(norumahA) && !isNaN(norumahB)) {
+                return norumahA - norumahB;
+            }
+            return a.norumah.localeCompare(b.norumah);
+        });
+
+        const grouped: { [blokKey: string]: Warga[] } = {};
+
+        for (const item of sortedData) {
+            const blokKey = item.blok || 'Lainnya';
+            if (!grouped[blokKey]) {
+                grouped[blokKey] = [];
+            }
+            grouped[blokKey].push(item);
+        }
+
+        return grouped;
+
+    }, [filteredData, type]);
+
 
     const renderHeaders = () => {
         switch (type) {
@@ -269,7 +332,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                 <TableRow>
                     <TableHead>Nama</TableHead>
                     <TableHead>Periode</TableHead>
-                    <TableHead>Blok</TableHead>
+                    <TableHead>Blok/No</TableHead>
                     <TableHead className="text-right">Lingkungan</TableHead>
                     <TableHead className="text-right">Sosial</TableHead>
                     <TableHead className="text-right">Masjid</TableHead>
@@ -319,7 +382,7 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                                         <TableRow key={item.iuranId}>
                                             <TableCell className="pl-8">{item.nama}</TableCell>
                                             <TableCell>{item.bulan} {item.tahun}</TableCell>
-                                            <TableCell>{item.blok}</TableCell>
+                                            <TableCell>{item.blok}/{item.norumah}</TableCell>
                                             <TableCell className="text-right">{formatRupiah(item.iuranLingkungan)}</TableCell>
                                             <TableCell className="text-right">{formatRupiah(item.iuranSosial)}</TableCell>
                                             <TableCell className="text-right">{formatRupiah(item.iuranMasjid)}</TableCell>
@@ -370,9 +433,23 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
                         </TableRow>
                      </React.Fragment>
                 ));
-            case 'warga': return (filteredData as Warga[]).map(item => (
-                <TableRow key={item.wargaId}><TableCell>{item.nama}</TableCell><TableCell>{item.blok}/{item.norumah}</TableCell><TableCell>{item.statustempattinggal}</TableCell><TableCell>{item.statusktp}</TableCell><TableCell>{item.phone}</TableCell></TableRow>
-            ));
+            case 'warga':
+                return Object.entries(groupedWarga).map(([blok, wargaList]) => (
+                    <React.Fragment key={blok}>
+                        <TableRow className="bg-muted/50 hover:bg-muted/50">
+                            <TableCell colSpan={5} className="font-bold">Blok {blok}</TableCell>
+                        </TableRow>
+                        {(wargaList as Warga[]).map(item => (
+                             <TableRow key={item.wargaId}>
+                                <TableCell className="pl-8">{item.nama}</TableCell>
+                                <TableCell>{item.blok}/{item.norumah}</TableCell>
+                                <TableCell>{item.statustempattinggal}</TableCell>
+                                <TableCell>{item.statusktp}</TableCell>
+                                <TableCell>{item.phone}</TableCell>
+                            </TableRow>
+                        ))}
+                    </React.Fragment>
+                ));
             case 'keluarga': return (filteredData as AnggotaKeluargaWithInfo[]).map(item => (
                 <TableRow key={item.anggotaId}><TableCell>{item.kepalaKeluarga}</TableCell><TableCell>{item.alamat}</TableCell><TableCell>{item.nama}</TableCell><TableCell>{item.hubungan}</TableCell><TableCell>{item.jeniskelamin}</TableCell></TableRow>
             ));
