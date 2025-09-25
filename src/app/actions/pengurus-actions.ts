@@ -7,7 +7,7 @@ import {
   updatePengurusInSheet,
   deletePengurusFromSheet,
   getPengurusDataFromSheet,
-} from '@/services/google-sheet';
+} from '@/lib/google-sheets';
 
 // Action to get all pengurus
 export async function getPengurusAction(): Promise<Pengurus[]> {

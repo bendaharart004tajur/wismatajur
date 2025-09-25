@@ -7,19 +7,16 @@ import {
   addPendapatanToSheet,
   updatePendapatanInSheet,
   deletePendapatanFromSheet,
-} from '@/services/google-sheet';
+} from '@/lib/google-sheets'; // Corrected import path
 import type { Pendapatan, Peran } from '@/lib/types';
 
 // Action to get all income records
 export async function getPendapatanAction(peran: Peran): Promise<Pendapatan[]> {
   if (peran !== 'Admin') {
-    // Return empty array for non-admins instead of throwing error
-    // to prevent crashes on dashboard when user is not admin
     return [];
   }
   try {
     const data = await getPendapatanDataFromSheet();
-    // Sort by date, newest first
     return data.sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime());
   } catch (error) {
     console.error('Error in getPendapatanAction:', error);

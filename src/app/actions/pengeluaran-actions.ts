@@ -7,7 +7,7 @@ import {
   addPengeluaranToSheet,
   updatePengeluaranInSheet,
   deletePengeluaranFromSheet
-} from '@/services/google-sheet';
+} from '@/lib/google-sheets'; // Corrected import path
 import type { Pengeluaran, Peran } from '@/lib/types';
 
 interface PengeluaranInput extends Omit<Pengeluaran, 'id' | 'dicatatOleh' | 'tanggal'> {

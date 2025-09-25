@@ -1,6 +1,6 @@
 'use server';
 
-import { getPengurusDataFromSheet } from "@/services/google-sheet";
+import { getPengurusDataFromSheet } from "@/lib/google-sheets"; // Corrected import path
 import type { Pengurus } from "@/lib/types";
 import bcrypt from 'bcryptjs';
 

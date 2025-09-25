@@ -7,9 +7,8 @@ import {
   addPengumumanToSheet,
   updatePengumumanInSheet,
   deletePengumumanFromSheet
-} from '@/services/google-sheet';
+} from '@/lib/google-sheets';
 import type { Pengumuman, Peran } from '@/lib/types';
-import { useAuth } from '@/context/AuthContext';
 
 // Action to get all announcements
 export async function getPengumumanAction(): Promise<Pengumuman[]> {

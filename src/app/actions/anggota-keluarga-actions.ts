@@ -8,7 +8,7 @@ import {
   updateAnggotaKeluargaInSheet,
   deleteAnggotaKeluargaFromSheet,
   getWargaDataFromSheet,
-} from '@/services/google-sheet';
+} from '@/lib/google-sheets'; // Corrected import path
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
 
 export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string) {
@@ -35,8 +35,9 @@ export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string) {
 
     } else {
       // User gets only their own anggota keluarga data
-      const anggota = await getAnggotaKeluargaDataFromSheet(wargaId);
-       return anggota.map(a => ({ ...a, kepalaKeluarga: '', alamat: '' })); // Extra fields not needed for user view
+      const allAnggota = await getAnggotaKeluargaDataFromSheet();
+      const anggota = allAnggota.filter(a => a.wargaId === wargaId);
+      return anggota.map(a => ({ ...a, kepalaKeluarga: '', alamat: '' })); // Extra fields not needed for user view
     }
 
   } catch (error) {
