@@ -80,6 +80,7 @@ export default function MonthlyFinanceChart({ data }: MonthlyFinanceChartProps) 
                  <ChartTooltip
                     cursor={false}
                     content={<ChartTooltipContent
+                        hideLabel={true}
                         formatter={(value, name) => {
                             const key = name as keyof typeof chartConfig;
                             if (!chartConfig[key]) return null;
