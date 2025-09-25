@@ -8,7 +8,7 @@ import {
   getIuranDataFromSheet,
   getWargaDataFromSheet,
   updateIuranInSheet,
-} from '@/lib/google-sheets'; // Corrected import path
+} from '@/lib/google-sheets';
 
 export async function getIuranAction(peran: Peran, wargaId: string, blok?: string) {
   try {

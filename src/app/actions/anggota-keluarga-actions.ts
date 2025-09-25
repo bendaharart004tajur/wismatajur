@@ -8,7 +8,7 @@ import {
   updateAnggotaKeluargaInSheet,
   deleteAnggotaKeluargaFromSheet,
   getWargaDataFromSheet,
-} from '@/lib/google-sheets'; // Corrected import path
+} from '@/lib/google-sheets';
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
 
 export async function getAnggotaKeluargaAction(peran: Peran, wargaId: string) {

@@ -7,7 +7,7 @@ import {
   addPendapatanToSheet,
   updatePendapatanInSheet,
   deletePendapatanFromSheet,
-} from '@/lib/google-sheets'; // Corrected import path
+} from '@/lib/google-sheets';
 import type { Pendapatan, Peran } from '@/lib/types';
 
 // Action to get all income records

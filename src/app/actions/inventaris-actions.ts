@@ -7,7 +7,7 @@ import {
   addInventarisToSheet,
   updateInventarisInSheet,
   deleteInventarisFromSheet
-} from '@/lib/google-sheets'; // Corrected import path
+} from '@/lib/google-sheets';
 import type { Inventaris, Peran } from '@/lib/types';
 
 // Action to get all inventaris items

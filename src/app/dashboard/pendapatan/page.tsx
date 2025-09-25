@@ -63,7 +63,7 @@ export default function PendapatanPage() {
             <CardTitle>Akses Ditolak</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin yang dapat melihat data pendapatan.</p>
+            <p>Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Admin dan Pengawas yang dapat melihat data pendapatan.</p>
           </CardContent>
         </Card>
       </div>
