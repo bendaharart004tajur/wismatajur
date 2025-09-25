@@ -13,7 +13,7 @@ import type { AnggotaKeluarga, Peran } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
 
 
-export async function getAnggotaKeluargaAction(peran: Peran): Promise<AnggotaKeluargaWithInfo[]> {
+export async function getAnggotaKeluargaAction(): Promise<AnggotaKeluargaWithInfo[]> {
   try {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
       const allWarga = await getWargaDataFromSheet('Admin');
