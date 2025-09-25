@@ -13,7 +13,6 @@ export type AnggotaKeluargaWithInfo = AnggotaKeluarga & {
 export default async function AnggotaKeluargaPage() {
   const user = await getCurrentUser();
 
-  // Safeguard: Only allow Admin and Pengawas to access this page
   if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
     return (
         <Card>

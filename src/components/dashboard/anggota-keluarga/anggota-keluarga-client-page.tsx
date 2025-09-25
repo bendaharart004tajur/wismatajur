@@ -26,7 +26,7 @@ export function AnggotaKeluargaClientPage({ initialData }: AnggotaKeluargaClient
   const fetchData = useCallback(() => {
     if (user && (user.peran === 'Admin' || user.peran === 'Pengawas')) {
       setIsLoading(true);
-      getAnggotaKeluargaAction(user.peran)
+      getAnggotaKeluargaAction()
         .then(data => setData(data))
         .catch(err => {
             console.error(err);
