@@ -204,12 +204,16 @@ export default function LaporanTable({ type, bulan, tahun }: LaporanTableProps) 
         }
 
         const sortedMonthKeys = Object.keys(grouped).sort((a, b) => {
-            const dateA = new Date(a);
-            const dateB = new Date(b);
-             // Handle invalid dates if any
-            if(isNaN(dateA.getTime())) return 1;
-            if(isNaN(dateB.getTime())) return -1;
-            return dateA.getTime() - dateB.getTime();
+            const monthNameA = a.split(' ')[0];
+            const yearA = parseInt(a.split(' ')[1]);
+            const monthNameB = b.split(' ')[0];
+            const yearB = parseInt(b.split(' ')[1]);
+
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const dateA = new Date(yearA, monthNames.indexOf(monthNameA));
+            const dateB = new Date(yearB, monthNames.indexOf(monthNameB));
+            
+            return dateB.getTime() - dateA.getTime();
         });
 
         const sortedGrouped: typeof grouped = {};
