@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "frameworksBackend": {
+      "id": "wismatajur",
+      "region": "asia-southeast1",
+      "secretEnvironmentVariables": [
+        {
+          "key": "GOOGLE_SHEET_ID",
+          "secret": "GOOGLE_SHEET_ID_SECRET"
+        },
+        {
+          "key": "GOOGLE_SERVICE_ACCOUNT_EMAIL",
+          "secret": "GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET"
+        },
+        {
+          "key": "GOOGLE_PRIVATE_KEY",
+          "secret": "GOOGLE_PRIVATE_KEY_SECRET"
+        }
+      ]
+    }
+  }
+}
