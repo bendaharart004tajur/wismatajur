@@ -15,7 +15,6 @@ export default async function AnggotaKeluargaPage() {
 
   // Safeguard: Only allow Admin and Pengawas to access this page
   if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
-    // You can redirect or show an access denied message. Redirecting is safer.
     return (
         <Card>
             <CardHeader>
@@ -28,9 +27,7 @@ export default async function AnggotaKeluargaPage() {
     );
   }
   
-  const initialData: AnggotaKeluargaWithInfo[] = await getAnggotaKeluargaAction(
-    user.peran
-  );
+  const initialData: AnggotaKeluargaWithInfo[] = await getAnggotaKeluargaAction();
 
   return (
     <AnggotaKeluargaClientPage initialData={initialData} />
