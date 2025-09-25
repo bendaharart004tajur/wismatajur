@@ -87,7 +87,7 @@ export default function MonthlyFinanceChart({ data }: MonthlyFinanceChartProps) 
 
                             return (
                                 <div className="flex items-center gap-2">
-                                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: chartConfig[key].color }}></div>
+                                    <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: chartConfig[key].color }}></div>
                                     <div className="flex flex-col">
                                         <span className="text-muted-foreground">{chartConfig[key].label}</span>
                                         <span className="font-bold">{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value as number)}</span>
