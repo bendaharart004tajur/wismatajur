@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { PlusCircle } from 'lucide-react';
@@ -24,9 +24,9 @@ export function AnggotaKeluargaClientPage({ initialData }: AnggotaKeluargaClient
   const { toast } = useToast();
 
   const fetchData = useCallback(() => {
-    if (user) {
+    if (user && (user.peran === 'Admin' || user.peran === 'Pengawas')) {
       setIsLoading(true);
-      getAnggotaKeluargaAction(user.peran, user.wargaId)
+      getAnggotaKeluargaAction(user.peran)
         .then(data => setData(data))
         .catch(err => {
             console.error(err);
@@ -36,8 +36,8 @@ export function AnggotaKeluargaClientPage({ initialData }: AnggotaKeluargaClient
     }
   }, [user, toast]);
 
-  const tableColumns = columns(fetchData, user?.peran === 'Admin' || user?.peran === 'Pengawas');
   const canAdd = user?.peran === 'Admin';
+  const tableColumns = columns(fetchData, canAdd);
   
   return (
     <div className="space-y-6">
@@ -47,9 +47,7 @@ export function AnggotaKeluargaClientPage({ initialData }: AnggotaKeluargaClient
                     <div className="flex-1">
                         <CardTitle>Anggota Keluarga</CardTitle>
                         <CardDescription>
-                            {user?.peran === 'Admin' || user?.peran === 'Pengawas' ? 
-                            'Daftar semua anggota keluarga dari seluruh warga.' :
-                            'Daftar anggota keluarga yang terdaftar atas nama Anda.'} 
+                            Daftar semua anggota keluarga dari seluruh warga.
                         </CardDescription>
                     </div>
                     {canAdd && (
@@ -77,7 +75,7 @@ export function AnggotaKeluargaClientPage({ initialData }: AnggotaKeluargaClient
                         </div>
                     </div>
                 ) : (
-                    <DataTable columns={tableColumns} data={data} isAdmin={user?.peran === 'Admin' || user?.peran === 'Pengawas'} />
+                    <DataTable columns={tableColumns} data={data} isAdmin={true} />
                 )}
             </CardContent>
         </Card>

@@ -29,7 +29,7 @@ function AksiKolom({ item, refreshData }: { item: AnggotaKeluargaWithInfo, refre
     const [isAlertOpen, setIsAlertOpen] = useState(false);
 
     const handleDelete = () => {
-        if (!user) return;
+        if (!user || user.peran !== 'Admin') return;
         startDeleteTransition(async () => {
           const result = await deleteAnggotaKeluargaAction(user.peran, item.anggotaId);
           if (result.success) {
@@ -90,7 +90,8 @@ function AksiKolom({ item, refreshData }: { item: AnggotaKeluargaWithInfo, refre
 }
 
 export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<AnggotaKeluargaWithInfo>[] => {
-    const adminColumns: ColumnDef<AnggotaKeluargaWithInfo>[] = isAdmin ? [
+    
+    return [
         {
             accessorKey: 'kepalaKeluarga',
             header: 'Kepala Keluarga',
@@ -98,11 +99,7 @@ export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<An
         {
             accessorKey: 'alamat',
             header: 'Alamat',
-        }
-    ] : [];
-
-    return [
-        ...adminColumns,
+        },
         {
             accessorKey: 'nama',
             header: 'Nama',
