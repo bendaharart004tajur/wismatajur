@@ -79,6 +79,21 @@ export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<Iu
                 )
             }
         },
+        {
+            accessorKey: 'iuranLingkungan',
+            header: () => <div className="text-right">Lingkungan</div>,
+            cell: ({ row }) => <div className="text-right font-mono pr-4">{formatRupiah(row.getValue('iuranLingkungan'))}</div>
+        },
+        {
+            accessorKey: 'iuranSosial',
+            header: () => <div className="text-right">Sosial</div>,
+            cell: ({ row }) => <div className="text-right font-mono pr-4">{formatRupiah(row.getValue('iuranSosial'))}</div>
+        },
+        {
+            accessorKey: 'iuranMasjid',
+            header: () => <div className="text-right">Masjid</div>,
+            cell: ({ row }) => <div className="text-right font-mono pr-4">{formatRupiah(row.getValue('iuranMasjid'))}</div>
+        },
          {
             accessorKey: 'totalIuran',
             header: () => <div className="text-right">Total Iuran</div>,
