@@ -68,7 +68,6 @@ export default function MonthlyFinanceChart({ data }: MonthlyFinanceChartProps) 
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) => value.substring(0, 3)}
                 />
                 <YAxis
                   tickFormatter={(value) => formatRupiahYAxis(value as number)}
@@ -81,9 +80,8 @@ export default function MonthlyFinanceChart({ data }: MonthlyFinanceChartProps) 
                     cursor={false}
                     content={<ChartTooltipContent
                         labelFormatter={(label, payload) => {
-                            // Find the full month name from the original data
-                            const entry = data.find(d => d.month.startsWith(label));
-                            return entry ? entry.month : label;
+                            // The label from the chart is already formatted as 'Mon YY'
+                            return label;
                         }}
                         formatter={(value, name) => (
                             <div className="flex items-center gap-2">
