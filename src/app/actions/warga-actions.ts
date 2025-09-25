@@ -31,7 +31,7 @@ export async function getWargaListForAnggotaKeluargaAction() {
   }
 }
 
-export async function addWargaAction(warga: Warga) {
+export async function addWargaAction(warga: Omit<Warga, 'wargaId' | 'tanggalinput'>) {
     try {
         const newWarga = await addWargaToSheet(warga);
         revalidatePath('/dashboard/warga');
