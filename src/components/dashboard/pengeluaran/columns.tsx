@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { EditPengeluaranDialog } from './edit-pengeluaran-dialog';
 import { DeletePengeluaranDialog } from './delete-pengeluaran-dialog';
 import { ViewBuktiDialog } from './view-bukti-dialog';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 function AksiKolom({ item, refreshData }: { item: Pengeluaran, refreshData: () => void }) {
     return (
@@ -67,22 +69,22 @@ export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<Pe
             if (isNaN(date.getTime())) {
                 return <div className="font-medium">-</div>;
             }
-            const formatted = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-            return <div className="font-medium">{formatted}</div>
+            const formatted = format(date, 'd MMM yyyy', { locale: id });
+            return <div className="font-medium pl-4">{formatted}</div>
         }
-    },
-    {
-        accessorKey: 'kategori',
-        header: 'Kategori',
-    },
-     {
-        accessorKey: 'subkategori',
-        header: 'Subkategori',
     },
     {
         accessorKey: 'deskripsi',
         header: 'Deskripsi',
-        cell: ({ row }) => <div className="max-w-xs truncate">{row.getValue('deskripsi')}</div>
+        cell: ({ row }) => {
+            const item = row.original;
+            return (
+                <div className='flex flex-col'>
+                    <span className="font-medium">{item.deskripsi}</span>
+                    <span className='text-xs text-muted-foreground'>{item.kategori}{item.subkategori ? ` - ${item.subkategori}` : ''}</span>
+                </div>
+            )
+        }
     },
     {
         accessorKey: 'jumlah',
@@ -90,7 +92,7 @@ export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<Pe
         cell: ({ row }) => {
             const amount = parseFloat(row.getValue('jumlah'));
             if (isNaN(amount)) {
-                return <div className="text-right font-mono">-</div>;
+                return <div className="text-right font-mono pr-4">-</div>;
             }
 
             const formatted = new Intl.NumberFormat('id-ID', {
@@ -100,7 +102,7 @@ export const columns = (refreshData: () => void, isAdmin: boolean): ColumnDef<Pe
                 maximumFractionDigits: 0,
             }).format(amount);
             
-            return <div className="text-right font-mono">{formatted}</div>
+            return <div className="text-right font-mono pr-4">{formatted}</div>
         }
     },
     {
