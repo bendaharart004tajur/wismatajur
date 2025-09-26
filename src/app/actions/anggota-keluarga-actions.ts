@@ -15,9 +15,8 @@ import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/p
 
 export async function getAnggotaKeluargaAction(): Promise<AnggotaKeluargaWithInfo[]> {
   try {
-      // Fetch all data required for enrichment, as this action is only for Admin/Pengawas
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
-      const allWarga = await getWargaDataFromSheet('Admin');
+      const allWarga = await getWargaDataFromSheet();
       
       const wargaMap = new Map(allWarga.map(w => [w.wargaId, {
         nama: w.nama,
