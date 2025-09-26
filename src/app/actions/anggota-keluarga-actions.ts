@@ -11,12 +11,13 @@ import {
 } from '@/lib/google-sheets';
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
+import { getWargaAction } from './warga-actions';
 
 
 export async function getAnggotaKeluargaAction(): Promise<AnggotaKeluargaWithInfo[]> {
   try {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
-      const allWarga = await getWargaDataFromSheet();
+      const allWarga = await getWargaDataFromSheet(); // Fetch all warga
       
       const wargaMap = new Map(allWarga.map(w => [w.wargaId, {
         nama: w.nama,
