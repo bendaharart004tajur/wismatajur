@@ -1,5 +1,3 @@
-# Firebase Studio
+# wismatajur
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+- Triggering a new deploy to apply the correct secret permissions.

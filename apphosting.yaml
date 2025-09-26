@@ -1,15 +1,36 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
+# Specifies the version of the App Hosting platform API.
+apiVersion: v1alpha1
 
-runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
-environmentVariables:
-  GOOGLE_SHEET_ID: ${GOOGLE_SHEET_ID_SECRET}
-  GOOGLE_SERVICE_ACCOUNT_EMAIL: ${GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET}
-  GOOGLE_PRIVATE_KEY: ${GOOGLE_PRIVATE_KEY_SECRET}
-secrets:
-- name: GOOGLE_SHEET_ID_SECRET
-- name: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
-- name: GOOGLE_PRIVATE_KEY_SECRET
+# Specifies the type of resource.
+kind: Backend
+
+# Specifies the name of your backend.
+# This must be the same as the backend ID you specify when you create
+# the backend in the Firebase console.
+name: wismatajur
+
+# Specifies the region where your backend is hosted.
+region: asia-southeast1
+
+# Specifies the resources your backend requires.
+resources:
+  # The amount of CPU allocated to your backend.
+  # This can be any value from 0.5 to 4.
+  cpu: 0.5
+  # The amount of memory allocated to your backend.
+  # This can be any value from 512MiB to 8GiB.
+  memory: 512MiB
+
+# The number of instances to run.
+# This can be any value from 1 to 10.
+minInstances: 1
+
+# Specifies the environment variables available to your backend.
+# These are accessible using process.env.
+env:
+  - variable: SPREADSHEET_ID
+    secret: GOOGLE_SHEET_ID_SECRET
+  - variable: GOOGLE_SERVICE_ACCOUNT_EMAIL
+    secret: GOOGLE_SERVICE_ACCOUNT_EMAIL_SECRET
+  - variable: GOOGLE_PRIVATE_KEY
+    secret: GOOGLE_PRIVATE_KEY_SECRET

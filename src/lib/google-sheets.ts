@@ -13,7 +13,7 @@ export async function getGoogleSheetsClient() {
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
   if (!serviceAccountEmail || !privateKey) {
-    throw new Error('Missing Google service account credentials in environment variables.');
+    throw new Error('Missing Google service account credentials.');
   }
 
   const auth = new JWT({
@@ -25,9 +25,9 @@ export async function getGoogleSheetsClient() {
   return google.sheets({ version: 'v4', auth });
 }
 
-export const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
+export const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
 if (!SPREADSHEET_ID) {
-  throw new Error('Missing GOOGLE_SHEET_ID in environment variables.');
+  throw new Error('Missing GOOGLE_SHEET_ID.');
 }
 
 // --- Generic Helper Functions ---
