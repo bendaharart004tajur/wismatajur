@@ -1,3 +1,4 @@
+
 export type Jabatan = 'Ketua RT' | 'Sekertaris' | 'Bendahara' | 'Koordinator' | 'Humas' | 'Seksi Pembangunan' | 'Seksi Ketahanan Pangan' | 'Seksi Sosial dan Keagamaan' | 'Seksi Keamanan' | 'Warga';
 export type Peran = 'Admin' | 'Pengawas' | 'Koordinator' | 'User';
 export type Blok = 'D1' | 'D2' | 'D3' | 'D4' | 'D5';
@@ -33,13 +34,16 @@ export interface Warga {
   jeniskelamin: string;
   blok: string;
   norumah: string;
-  phone: string;
+  telepon: string; // was phone
   statustempattinggal: string;
   statusktp: string;
   kontakdarurat: string;
   fotoprofilurl: string;
   uploadktpurl: string;
   tanggalinput: string;
+  // These were missing from the previous definition but present in forms
+  pekerjaan: string;
+  statusperkawinan: string;
 }
 
 export interface AnggotaKeluarga {

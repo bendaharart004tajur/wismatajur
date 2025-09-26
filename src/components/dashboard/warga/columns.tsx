@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Warga, Peran } from '@/lib/types';
@@ -100,7 +101,7 @@ export const columns = (refreshData: () => void, userRole?: Peran): ColumnDef<Wa
         }
     },
     {
-        accessorKey: 'phone',
+        accessorKey: 'telepon',
         header: 'No. Telepon',
     },
     ]

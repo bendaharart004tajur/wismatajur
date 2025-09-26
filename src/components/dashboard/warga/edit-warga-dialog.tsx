@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, type ReactNode, useEffect } from 'react';
@@ -29,16 +30,19 @@ const statusTempatTinggalOptions = ['Tetap', 'Kontrak', 'Kosong'];
 const statusKtpOptions = ['Local', 'No Local', 'Kosong'];
 const jenisKelaminOptions = ['Laki-laki', 'Perempuan'];
 
+// Match the full Warga type now
 const wargaFormSchema = z.object({
   nama: z.string().min(1, 'Nama wajib diisi'),
   email: z.string().email('Email tidak valid').optional().or(z.literal('')),
   jeniskelamin: z.string().min(1, 'Jenis kelamin wajib diisi'),
-  phone: z.string().optional().or(z.literal('')),
+  telepon: z.string().optional().or(z.literal('')),
   blok: z.string().min(1, 'Blok wajib diisi'),
   norumah: z.string().min(1, 'Nomor rumah wajib diisi'),
   statustempattinggal: z.string().min(1, 'Status tempat tinggal wajib diisi'),
   statusktp: z.string().min(1, 'Status KTP wajib diisi'),
   kontakdarurat: z.string().optional().or(z.literal('')),
+  pekerjaan: z.string().optional().or(z.literal('')),
+  statusperkawinan: z.string().optional().or(z.literal('')),
 });
 
 type WargaFormValues = z.infer<typeof wargaFormSchema>;
@@ -61,12 +65,14 @@ export function EditWargaDialog({ children, warga, onWargaUpdated }: EditWargaDi
       nama: warga.nama,
       email: warga.email,
       jeniskelamin: warga.jeniskelamin,
-      phone: warga.phone,
+      telepon: warga.telepon,
       blok: warga.blok,
       norumah: warga.norumah,
       statustempattinggal: warga.statustempattinggal,
       statusktp: warga.statusktp,
       kontakdarurat: warga.kontakdarurat,
+      pekerjaan: warga.pekerjaan,
+      statusperkawinan: warga.statusperkawinan,
     },
   });
 
@@ -76,12 +82,14 @@ export function EditWargaDialog({ children, warga, onWargaUpdated }: EditWargaDi
         nama: warga.nama,
         email: warga.email || '',
         jeniskelamin: warga.jeniskelamin,
-        phone: warga.phone || '',
+        telepon: warga.telepon || '',
         blok: warga.blok,
         norumah: warga.norumah,
         statustempattinggal: warga.statustempattinggal,
         statusktp: warga.statusktp,
         kontakdarurat: warga.kontakdarurat || '',
+        pekerjaan: warga.pekerjaan || '',
+        statusperkawinan: warga.statusperkawinan || '',
       });
     }
   }, [isOpen, warga, form]);
@@ -91,12 +99,9 @@ export function EditWargaDialog({ children, warga, onWargaUpdated }: EditWargaDi
     setIsSubmitting(true);
 
     const result = await updateWargaAction({ 
-        ...warga, 
+        wargaId: warga.wargaId,
         ...values,
-        email: values.email || '',
-        phone: values.phone || '',
-        kontakdarurat: values.kontakdarurat || '',
-    });
+    } as Warga);
 
     if (result.success) {
       toast({ title: 'Sukses', description: result.message });
@@ -165,7 +170,7 @@ export function EditWargaDialog({ children, warga, onWargaUpdated }: EditWargaDi
                 <FormField control={form.control} name="email" render={({ field }) => (
                     <FormItem><FormLabel>Email (Opsional)</FormLabel><FormControl><Input type="email" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
-                <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormField control={form.control} name="telepon" render={({ field }) => (
                     <FormItem><FormLabel>No. Telepon (Opsional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="kontakdarurat" render={({ field }) => (
