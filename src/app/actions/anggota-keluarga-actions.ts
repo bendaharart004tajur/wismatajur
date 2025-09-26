@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -7,17 +8,16 @@ import {
   addAnggotaKeluargaToSheet,
   updateAnggotaKeluargaInSheet,
   deleteAnggotaKeluargaFromSheet,
-  getWargaDataFromSheet,
 } from '@/lib/google-sheets';
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
 import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
-import { getWargaAction } from './warga-actions';
+import { getWargaAction } from '@/app/actions/warga-actions';
 
 
 export async function getAnggotaKeluargaAction(): Promise<AnggotaKeluargaWithInfo[]> {
   try {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
-      const allWarga = await getWargaDataFromSheet(); // Fetch all warga
+      const allWarga = await getWargaAction(); // Fetch all warga
       
       const wargaMap = new Map(allWarga.map(w => [w.wargaId, {
         nama: w.nama,
