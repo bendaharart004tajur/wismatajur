@@ -34,14 +34,13 @@ export interface Warga {
   jeniskelamin: string;
   blok: string;
   norumah: string;
-  telepon: string; // was phone
+  telepon: string;
   statustempattinggal: string;
   statusktp: string;
   kontakdarurat: string;
   fotoprofilurl: string;
   uploadktpurl: string;
   tanggalinput: string;
-  // These were missing from the previous definition but present in forms
   pekerjaan: string;
   statusperkawinan: string;
 }
