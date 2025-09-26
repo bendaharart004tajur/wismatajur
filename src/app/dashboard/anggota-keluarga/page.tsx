@@ -1,12 +1,47 @@
-import { getCurrentUser } from '@/lib/auth-ssr';
-import { getAnggotaKeluargaAction } from '@/app/actions/anggota-keluarga-actions';
-import { AnggotaKeluargaClientPage } from '@/components/dashboard/anggota-keluarga/anggota-keluarga-client-page';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
 
-export default async function AnggotaKeluargaPage() {
-  const user = await getCurrentUser();
+import { useAuth } from '@/context/AuthContext';
+import { AnggotaKeluargaWithInfo, getAnggotaKeluargaAction } from '@/app/actions/anggota-keluarga-actions';
+import { useState, useCallback, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { PlusCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { AddAnggotaKeluargaDialog } from '@/components/dashboard/add-anggota-keluarga-dialog';
+import { columns } from '@/components/dashboard/anggota-keluarga/columns';
+import { DataTable } from '@/components/dashboard/anggota-keluarga/data-table';
+import { Skeleton } from '@/components/ui/skeleton';
 
-  if (!user || (user.peran !== 'Admin' && user.peran !== 'Pengawas')) {
+export default function AnggotaKeluargaPage() {
+  const { user } = useAuth();
+  const [data, setData] = useState<AnggotaKeluargaWithInfo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  const canView = user?.peran === 'Admin' || user?.peran === 'Pengawas';
+  const canAdd = user?.peran === 'Admin';
+
+  const fetchData = useCallback(() => {
+    if (!canView) {
+        setIsLoading(false);
+        return;
+    }
+    setIsLoading(true);
+    getAnggotaKeluargaAction()
+      .then(data => setData(data))
+      .catch(err => {
+          console.error(err);
+          toast({ title: "Error", description: "Gagal memuat data anggota keluarga.", variant: "destructive" });
+      })
+      .finally(() => setIsLoading(false));
+  }, [canView, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+
+  if (!canView) {
     return (
         <Card>
             <CardHeader>
@@ -19,10 +54,48 @@ export default async function AnggotaKeluargaPage() {
     );
   }
 
-  // Fetch data on the server
-  const initialData = await getAnggotaKeluargaAction();
+  const tableColumns = columns(fetchData, canAdd);
   
   return (
-    <AnggotaKeluargaClientPage initialData={initialData} />
+    <div className="space-y-6">
+        <Card>
+            <CardHeader>
+                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="flex-1">
+                        <CardTitle>Anggota Keluarga</CardTitle>
+                        <CardDescription>
+                            Daftar semua anggota keluarga dari seluruh warga.
+                        </CardDescription>
+                    </div>
+                    {canAdd && (
+                        <AddAnggotaKeluargaDialog onAnggotaAdded={fetchData}>
+                            <Button className="w-full sm:w-auto">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Tambah Anggota
+                            </Button>
+                        </AddAnggotaKeluargaDialog>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+               {isLoading ? (
+                    <div className="p-4 space-y-4">
+                        <div className='flex justify-between p-4'>
+                            <Skeleton className="h-10 w-[250px]" />
+                        </div>
+                        <div className='p-4'>
+                        <Skeleton className="h-12 w-full" />
+                        </div>
+                        <div className='space-y-2 p-4'>
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                    </div>
+                ) : (
+                    <DataTable columns={tableColumns} data={data} isAdmin={canAdd} />
+                )}
+            </CardContent>
+        </Card>
+    </div>
   );
 }
