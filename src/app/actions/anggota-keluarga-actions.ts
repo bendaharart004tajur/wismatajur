@@ -8,16 +8,20 @@ import {
   addAnggotaKeluargaToSheet,
   updateAnggotaKeluargaInSheet,
   deleteAnggotaKeluargaFromSheet,
+  getWargaDataFromSheet,
 } from '@/lib/google-sheets';
 import type { AnggotaKeluarga, Peran } from '@/lib/types';
-import type { AnggotaKeluargaWithInfo } from '@/app/dashboard/anggota-keluarga/page';
-import { getWargaAction } from '@/app/actions/warga-actions';
 
+
+export type AnggotaKeluargaWithInfo = AnggotaKeluarga & {
+  kepalaKeluarga?: string;
+  alamat?: string;
+};
 
 export async function getAnggotaKeluargaAction(): Promise<AnggotaKeluargaWithInfo[]> {
   try {
       const allAnggota = await getAnggotaKeluargaDataFromSheet();
-      const allWarga = await getWargaAction(); // Fetch all warga
+      const allWarga = await getWargaDataFromSheet();
       
       const wargaMap = new Map(allWarga.map(w => [w.wargaId, {
         nama: w.nama,
