@@ -1,10 +1,11 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { addWargaToSheet, deleteWargaFromSheet, getWargaDataFromSheet, updateWargaInSheet } from '@/lib/google-sheets';
 import type { Peran, Warga } from '@/lib/types';
 
-export async function getWargaAction(peran: Peran, wargaId?: string, blok?: string) {
+export async function getWargaAction(peran?: Peran, wargaId?: string, blok?: string) {
   try {
     const warga = await getWargaDataFromSheet(peran, wargaId, blok);
     return warga;
